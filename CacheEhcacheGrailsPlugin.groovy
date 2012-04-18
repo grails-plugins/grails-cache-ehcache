@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import grails.plugin.cache.ehcache.EhcacheConfigBuilder
 import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
 import grails.plugin.cache.web.filter.ehcache.EhcachePageFragmentCachingFilter
 
@@ -19,6 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean
+import org.springframework.core.io.ByteArrayResource
 
 class CacheEhcacheGrailsPlugin {
 
@@ -45,18 +47,30 @@ class CacheEhcacheGrailsPlugin {
 			return
 		}
 
-		def cacheConfig = application.config.grails.cache.ehcache
-		String ehcacheXmlLocation
-		if (cacheConfig.ehcacheXmlLocation instanceof CharSequence) {
-			ehcacheXmlLocation = cacheConfig.ehcacheXmlLocation
-			log.info "Using Ehcache configuration file $ehcacheXmlLocation"
+		def cacheConfig = application.config.grails.cache
+		def ehcacheConfig = cacheConfig.ehcache
+		def ehcacheConfigLocation
+		if (cacheConfig.config instanceof Closure) {
+			// parse the config into XML and let Ehcache configure itself from that
+			EhcacheConfigBuilder builder = new EhcacheConfigBuilder()
+			builder.parse cacheConfig.config
+			String xml = builder.toXml()
+			log.debug "Ehcache generated XML:\n$xml"
+			ehcacheConfigLocation = new ByteArrayResource(xml.bytes)
+		}
+		else if (ehcacheConfig.ehcacheXmlLocation instanceof CharSequence) {
+			// use the specified location
+			ehcacheConfigLocation = ehcacheConfig.ehcacheXmlLocation
+			log.info "Using Ehcache configuration file $ehcacheConfigLocation"
 		}
 		else {
+			// no config and no specified location, so look for ehcache.xml in the classpath,
+			// and fall back to ehcache-failsafe.xml in the Ehcache jar as a last resort
 			def ctx = springConfig.unrefreshedApplicationContext
 			def defaults = ['classpath:ehcache.xml', 'classpath:ehcache-failsafe.xml']
-			ehcacheXmlLocation = defaults.find { ctx.getResource(it).exists() }
-			if (ehcacheXmlLocation) {
-				log.info "No Ehcache configuration file specified, using $ehcacheXmlLocation"
+			ehcacheConfigLocation = defaults.find { ctx.getResource(it).exists() }
+			if (ehcacheConfigLocation) {
+				log.info "No Ehcache configuration file specified, using $ehcacheConfigLocation"
 			}
 			else {
 				log.error "No Ehcache configuration file specified and default file not found"
@@ -64,7 +78,7 @@ class CacheEhcacheGrailsPlugin {
 		}
 
 		ehcacheCacheManager(EhCacheManagerFactoryBean) {
-			configLocation = ehcacheXmlLocation
+			configLocation = ehcacheConfigLocation
 		}
 
 		cacheManager(GrailsEhcacheCacheManager) {

@@ -132,6 +132,28 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute 'LRU', 'memoryStoreEvictionPolicy', defaultCache
 	}
 
+	void testCache() {
+
+		parse {
+			cache {
+				name 'mycache'
+				eternal false
+				overflowToDisk true
+				maxElementsInMemory 10000
+				maxElementsOnDisk 10000000
+			}
+		}
+
+		def caches = root.cache
+		assertEquals 1, caches.size()
+		def cache = caches[0]
+		assertAttribute 'mycache', 'name', cache
+		assertAttribute 'false', 'eternal', cache
+		assertAttribute 'true', 'overflowToDisk', cache
+		assertAttribute '10000', 'maxElementsInMemory', cache
+		assertAttribute '10000000', 'maxElementsOnDisk', cache
+	}
+
 	void testDomain() {
 
 		parse {
@@ -404,14 +426,59 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute ',', 'propertySeparator', factory
 	}
 
+	void testFromConfigGroovy() {
+
+		ConfigObject config = new ConfigSlurper(Environment.current.name).parse(
+			new GroovyClassLoader(getClass().classLoader).loadClass('Config'))
+		def cacheConfig = config.grails.cache.config
+		assertTrue cacheConfig instanceof Closure
+
+		parse cacheConfig
+
+		def caches = root.cache
+		assertEquals 1, caches.size()
+		def cache = caches[0]
+		assertAttribute 'mycache', 'name', cache
+		assertAttribute 'false', 'eternal', cache
+		assertAttribute 'true', 'overflowToDisk', cache
+		assertAttribute '10000', 'maxElementsInMemory', cache
+		assertAttribute '10000000', 'maxElementsOnDisk', cache
+	}
+
+	void testLenient() {
+
+		parse {
+			domain {
+				name 'com.foo.Thing'
+				eternal false
+				overflowToDisk true
+				maxElementsInMemory 10000
+				maxElementsOnDisk 10000000
+				type 'com.foo.BarCache'
+				someOtherProperty 42
+				nested {
+					bar 123
+				}
+			}
+		}
+
+		def caches = root.cache
+		assertEquals 1, caches.size()
+		def cache = caches[0]
+		assertAttribute 'com.foo.Thing', 'name', cache
+		assertAttribute 'false', 'eternal', cache
+		assertAttribute 'true', 'overflowToDisk', cache
+		assertAttribute '10000', 'maxElementsInMemory', cache
+		assertAttribute '10000000', 'maxElementsOnDisk', cache
+	}
+
 	private void assertAttribute(String expected, String name, node = root) {
 		assertEquals expected, node."@$name".text()
 	}
 
 	private void parse(Closure config) {
 		builder = new EhcacheConfigBuilder()
-		config.delegate = builder
-		config()
+		builder.parse config
 		xml = builder.toXml()
 		root = new XmlSlurper().parseText(xml)
 	}

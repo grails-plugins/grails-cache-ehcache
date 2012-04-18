@@ -72,6 +72,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	private Map<String, Object> _current
 	private String _diskStore = TEMP_DIR
 	private List<Map<String, Object>> _cacheManagerPeerProviderFactories = []
+	private int _unrecognizedElementDepth = 0
 
 	private final Logger _log = LoggerFactory.getLogger(getClass())
 
@@ -107,8 +108,24 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 	private static final String TEMP_DIR = 'java.io.tmpdir'
 
+	/**
+	 * Convenience method to parse a config closure.
+	 * @param c the closure
+	 */
+	void parse(Closure c) {
+		c.delegate = this
+		c.resolveStrategy = Closure.DELEGATE_FIRST
+		c()
+	}
+
 	@Override
 	protected createNode(name) {
+		if (_unrecognizedElementDepth) {
+			_unrecognizedElementDepth++
+			_log.warn "ignoring node $name contained in unrecognized parent node"
+			return
+		}
+
 		_log.trace "createNode $name"
 
 		switch (name) {
@@ -137,6 +154,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 			case 'domainCollection':
 			case 'collection':
+			case 'cache':
 			case 'domain':
 				_current = [:]
 				_caches << _current
@@ -180,11 +198,18 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				return name
 		}
 
-		throw new IllegalArgumentException("Cannot create empty node with name '$name'")
+		_unrecognizedElementDepth++
+		_log.warn "Cannot create empty node with name '$name'"
 	}
 
 	@Override
 	protected createNode(name, value) {
+		if (_unrecognizedElementDepth) {
+			_unrecognizedElementDepth++
+			_log.warn "ignoring node $name with value $value contained in unrecognized parent node"
+			return
+		}
+
 		_log.trace "createNode $name, value: $value"
 
 		String level = _stack[-1]
@@ -257,12 +282,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				break
 
 			case 'domain':
+			case 'cache':
 			case 'domainCollection':
-				if (('name' == name || 'domain' == name) && value instanceof Class) {
+				if (('name' == name || 'cache' == name || 'domain' == name) && value instanceof Class) {
 					value = value.name
 				}
 
-				if ('name' == name || 'domain' == name || name in CACHE_PARAM_NAMES) {
+				if ('name' == name || 'cache' == name  || 'domain' == name || name in CACHE_PARAM_NAMES) {
 					_current[name] = value
 					return name
 				}
@@ -327,18 +353,30 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				return name
 		}
 
-		throw new IllegalArgumentException("Cannot create node with name '$name' and value '$value' for parent '$level'")
+		_unrecognizedElementDepth++
+		_log.warn "Cannot create node with name '$name' and value '$value' for parent '$level'"
 	}
 
 	@Override
 	protected createNode(name, Map attributes) {
+		if (_unrecognizedElementDepth) {
+			_unrecognizedElementDepth++
+			_log.warn "ignoring node $name with attributes $attributes contained in unrecognized parent node"
+			return
+		}
+
 		_log.trace "createNode $name + attributes: $attributes"
 	}
 
 	@Override
 	protected createNode(name, Map attributes, value) {
+		if (_unrecognizedElementDepth) {
+			_unrecognizedElementDepth++
+			_log.warn "ignoring node $name with value $value and attributes $attributes contained in unrecognized parent node"
+			return
+		}
+
 		_log.trace "createNode $name + value: $value attributes: $attributes"
-		throw new UnsupportedOperationException()
 	}
 
 	@Override
@@ -350,7 +388,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	@Override
 	protected void nodeCompleted(parent, node) {
 		_log.trace "nodeCompleted $parent $node"
-		_stack.pop()
+
+		if (_unrecognizedElementDepth) {
+			_unrecognizedElementDepth--
+		}
+		else {
+			_stack.pop()
+		}
 	}
 
 	String toXml() {
