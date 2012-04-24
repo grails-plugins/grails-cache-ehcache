@@ -49,7 +49,7 @@ public class EhcachePageFragmentCachingFilter extends PageFragmentCachingFilter 
 		}
 		return 0;
 	}
-	
+
 	@Override
 	protected net.sf.ehcache.CacheManager getNativeCacheManager() {
 		return (net.sf.ehcache.CacheManager)super.getNativeCacheManager();
