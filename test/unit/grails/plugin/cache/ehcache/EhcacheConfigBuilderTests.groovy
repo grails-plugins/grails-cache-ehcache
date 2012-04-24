@@ -22,9 +22,9 @@ import grails.util.Environment
  */
 class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 
-	private EhcacheConfigBuilder builder
-	private String xml
-	private root
+	protected EhcacheConfigBuilder builder
+	protected String xml
+	protected root
 
 	void testTopLevelAttributes() {
 
@@ -472,11 +472,11 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 
-	private void assertAttribute(String expected, String name, node = root) {
+	protected void assertAttribute(String expected, String name, node = root) {
 		assertEquals expected, node."@$name".text()
 	}
 
-	private void parse(Closure config) {
+	protected void parse(Closure config) {
 		builder = new EhcacheConfigBuilder()
 		builder.parse config
 		xml = builder.toXml()

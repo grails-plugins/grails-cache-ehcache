@@ -38,10 +38,10 @@ import org.springframework.util.Assert;
  */
 public class GrailsEhcacheCacheManager extends AbstractCacheManager {
 
-	private Logger log = LoggerFactory.getLogger(getClass());
+	protected Logger log = LoggerFactory.getLogger(getClass());
 
-	private CacheManager cacheManager;
-	private List<String> additionalCacheNames;
+	protected CacheManager cacheManager;
+	protected List<String> additionalCacheNames;
 
 	@Override
 	protected Collection<Cache> loadCaches() {

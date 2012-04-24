@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory
  */
 class EhcacheConfigBuilder extends BuilderSupport {
 
-	private static final String INDENT = '\t'
-	private static final String LF = System.getProperty('line.separator')
+	protected static final String INDENT = '\t'
+	protected static final String LF = System.getProperty('line.separator')
 
-	private static final Map<String, Integer> TTL = [
+	protected static final Map<String, Integer> TTL = [
 		host: 0,
 		subnet: 1,
 		site: 32,
@@ -37,46 +37,46 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		continent: 128,
 		unrestricted: 255]
 
-	private static final Map<String, String> CACHE_MANAGER_PEER_PROVIDERS =
+	protected static final Map<String, String> CACHE_MANAGER_PEER_PROVIDERS =
 		[rmi: 'net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory',
 		 jgroups: 'net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory',
 		 jms: 'net.sf.ehcache.distribution.jms.JMSCacheManagerPeerProviderFactory']
 
-	private static final Map<String, String> CACHE_EVENT_LISTENER_FACTORIES =
+	protected static final Map<String, String> CACHE_EVENT_LISTENER_FACTORIES =
 		[rmi: 'net.sf.ehcache.distribution.RMICacheReplicatorFactory',
 		 jgroups: 'net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory',
 		 jms: 'net.sf.ehcache.distribution.jms.JMSCacheReplicatorFactory']
 
-	private static final Map<String, String> BOOTSTRAP_CACHE_LOADER_FACTORIES =
+	protected static final Map<String, String> BOOTSTRAP_CACHE_LOADER_FACTORIES =
 		[rmi: 'net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory',
 		 jgroups: 'net.sf.ehcache.distribution.jgroups.JGroupsBootstrapCacheLoaderFactory'] // no JMS
 
-	private List<String> _stack = []
-	private List<Map<String, Object>> _caches = []
-	private Map<String, Object> _defaultCache = [:]
-	private Map<String, Object> _defaults = [:]
-	private Map<String, Object> _hibernateQuery = [
+	protected List<String> _stack = []
+	protected List<Map<String, Object>> _caches = []
+	protected Map<String, Object> _defaultCache = [:]
+	protected Map<String, Object> _defaults = [:]
+	protected Map<String, Object> _hibernateQuery = [
 		name: 'org.hibernate.cache.StandardQueryCache', maxElementsInMemory: 50,
 		timeToLiveSeconds: 120, eternal: false, overflowToDisk: true, maxElementsOnDisk: 0]
-	private Map<String, Object> _hibernateTimestamps = [
+	protected Map<String, Object> _hibernateTimestamps = [
 		name: 'org.hibernate.cache.UpdateTimestampsCache', maxElementsInMemory: 5000,
 		eternal: true, overflowToDisk: false, maxElementsOnDisk: 0]
-	private Map<String, Object> _cacheManagerPeerListenerFactory // can be empty, so exists == not null
-	private Map<String, Object> _cacheManagerEventListenerFactory = [:]
-	private Map<String, Object> _provider = [:]
-	private List<Map<String, Object>> _cacheEventListenerFactories = []
-	private List<Map<String, Object>> _bootstrapCacheLoaderFactories = []
-	private List<Map<String, Object>> _cacheExceptionHandlerFactories = []
-	private List<Map<String, Object>> _cacheLoaderFactories = []
-	private List<Map<String, Object>> _cacheExtensionFactories = []
-	private Map<String, Object> _current
-	private String _diskStore = TEMP_DIR
-	private List<Map<String, Object>> _cacheManagerPeerProviderFactories = []
-	private int _unrecognizedElementDepth = 0
+	protected Map<String, Object> _cacheManagerPeerListenerFactory // can be empty, so exists == not null
+	protected Map<String, Object> _cacheManagerEventListenerFactory = [:]
+	protected Map<String, Object> _provider = [:]
+	protected List<Map<String, Object>> _cacheEventListenerFactories = []
+	protected List<Map<String, Object>> _bootstrapCacheLoaderFactories = []
+	protected List<Map<String, Object>> _cacheExceptionHandlerFactories = []
+	protected List<Map<String, Object>> _cacheLoaderFactories = []
+	protected List<Map<String, Object>> _cacheExtensionFactories = []
+	protected Map<String, Object> _current
+	protected String _diskStore = TEMP_DIR
+	protected List<Map<String, Object>> _cacheManagerPeerProviderFactories = []
+	protected int _unrecognizedElementDepth = 0
 
-	private final Logger _log = LoggerFactory.getLogger(getClass())
+	protected final Logger _log = LoggerFactory.getLogger(getClass())
 
-	private static final List DEFAULT_CACHE_PARAM_NAMES = [
+	protected static final List DEFAULT_CACHE_PARAM_NAMES = [
 		'cacheLoaderTimeoutMillis', 'clearOnFlush', 'copyOnRead', 'copyOnWrite',
 		'diskAccessStripes', 'diskExpiryThreadIntervalSeconds', 'diskSpoolBufferSizeMB',
 		'diskPersistent', 'eternal', 'maxElementsInMemory', 'maxElementsOnDisk',
@@ -84,29 +84,29 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		'memoryStoreEvictionPolicy', 'overflowToDisk', 'overflowToOffHeap',
 		'statistics', 'timeToIdleSeconds', 'timeToLiveSeconds', 'transactionalMode']
 
-	private static final List CACHE_PARAM_NAMES = DEFAULT_CACHE_PARAM_NAMES + [
+	protected static final List CACHE_PARAM_NAMES = DEFAULT_CACHE_PARAM_NAMES + [
 		'env', 'logging', 'maxBytesLocalDisk', 'maxBytesLocalHeap', 'maxBytesLocalOffHeap', 'name']
 
-	private static final List RMI_CACHE_MANAGER_PARAM_NAMES = [
+	protected static final List RMI_CACHE_MANAGER_PARAM_NAMES = [
 		'env', 'factoryType', 'multicastGroupAddress', 'multicastGroupPort',
 		'timeToLive', 'className', 'rmiUrl', 'hostName']
 
-	private static final List JGROUPS_CACHE_MANAGER_PARAM_NAMES = ['env', 'connect']
+	protected static final List JGROUPS_CACHE_MANAGER_PARAM_NAMES = ['env', 'connect']
 
-	private static final List JMS_CACHE_MANAGER_PARAM_NAMES = [
+	protected static final List JMS_CACHE_MANAGER_PARAM_NAMES = [
 		'env', 'initialContextFactoryName', 'providerURL', 'topicConnectionFactoryBindingName',
 		'topicBindingName', 'getQueueBindingName', 'securityPrincipalName', 'securityCredentials',
 		'urlPkgPrefixes', 'userName', 'password', 'acknowledgementMode']
 
-	private static final List FACTORY_REF_NAMES = [
+	protected static final List FACTORY_REF_NAMES = [
 		'cacheEventListenerFactoryName', 'bootstrapCacheLoaderFactoryName', 'cacheExceptionHandlerFactoryName',
 		'cacheLoaderFactoryName', 'cacheExtensionFactoryName']
 
-	private static final List PROVIDER_NAMES = [
+	protected static final List PROVIDER_NAMES = [
 		'updateCheck', 'monitoring', 'dynamicConfig', 'name', 'defaultTransactionTimeoutInSeconds',
 		'maxBytesLocalHeap', 'maxBytesLocalOffHeap', 'maxBytesLocalDisk']
 
-	private static final String TEMP_DIR = 'java.io.tmpdir'
+	protected static final String TEMP_DIR = 'java.io.tmpdir'
 
 	/**
 	 * Convenience method to parse a config closure.
@@ -464,7 +464,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		xml.toString()
 	}
 
-	private void appendCache(StringBuilder xml, String type, Map data, String env,
+	protected void appendCache(StringBuilder xml, String type, Map data, String env,
 			Map cacheEventListenerFactoriesXml, Map bootstrapCacheLoaderFactoriesXml,
 			Map cacheExceptionHandlerFactoriesXml, Map cacheLoaderFactoriesXml,
 			Map cacheExtensionFactoriesXml) {
@@ -519,7 +519,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		xml.append LF
 	}
 
-	private void appendCacheManagerPeerProviderFactory(StringBuilder xml, Map data, String env) {
+	protected void appendCacheManagerPeerProviderFactory(StringBuilder xml, Map data, String env) {
 
 		String type = data.remove('factoryType')
 		String className = data.remove('className')
@@ -564,14 +564,14 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		}
 	}
 
-	private void appendCacheManagerPeerProviderFactoryNode(StringBuilder xml, Map data,
+	protected void appendCacheManagerPeerProviderFactoryNode(StringBuilder xml, Map data,
 			String delimiter, String className) {
 
 		String properties = joinProperties(data, delimiter)
 		appendSimpleNodeWithProperties xml, 'cacheManagerPeerProviderFactory', className, properties, delimiter
 	}
 
-	private void appendCacheManagerPeerListenerFactory(StringBuilder xml, String env) {
+	protected void appendCacheManagerPeerListenerFactory(StringBuilder xml, String env) {
 		if (_cacheManagerPeerListenerFactory == null) {
 			return
 		}
@@ -588,7 +588,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		appendSimpleNodeWithProperties xml, 'cacheManagerPeerListenerFactory', className, properties, ','
 	}
 
-	private void appendCacheManagerEventListenerFactory(StringBuilder xml, String env) {
+	protected void appendCacheManagerEventListenerFactory(StringBuilder xml, String env) {
 		if (!_cacheManagerEventListenerFactory) {
 			return
 		}
@@ -604,7 +604,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		appendSimpleNodeWithProperties xml, 'cacheManagerEventListenerFactory', className, properties, ','
 	}
 
-	private String generateChildElementXml(Map data, Map classNames, String nodeName) {
+	protected String generateChildElementXml(Map data, Map classNames, String nodeName) {
 
 		def xml = new StringBuilder()
 
@@ -621,7 +621,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		xml.toString()
 	}
 
-	private String joinProperties(Map data, String delimiter) {
+	protected String joinProperties(Map data, String delimiter) {
 
 		StringBuilder properties = new StringBuilder()
 		String delim = ''
@@ -633,14 +633,14 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		properties.toString()
 	}
 
-	private void appendProperty(StringBuilder sb, String name, value, String prefix, boolean quote = true) {
+	protected void appendProperty(StringBuilder sb, String name, value, String prefix, boolean quote = true) {
 		sb.append(prefix).append(name).append('=')
 		if (quote) sb.append('"')
 		sb.append value
 		if (quote) sb.append('"')
 	}
 
-	private boolean isValidInEnv(Map data, String env) {
+	protected boolean isValidInEnv(Map data, String env) {
 		def environments = data.remove('env') ?: []
 		if (!(environments instanceof List)) {
 			environments = [environments]
@@ -649,7 +649,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		environments.isEmpty() || environments.contains(env)
 	}
 
-	private void appendSimpleNodeWithProperties(StringBuilder xml, String nodeName, String className,
+	protected void appendSimpleNodeWithProperties(StringBuilder xml, String nodeName, String className,
 				String properties, String delimiter, int indentCount = 1) {
 
 		String indent = INDENT.multiply(indentCount)
@@ -661,7 +661,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		xml.append "$indent/>$LF"
 	}
 
-	private void addToList(Map data, String listName, value) {
+	protected void addToList(Map data, String listName, value) {
 		List list = data[listName]
 		if (!list) {
 			list = []
@@ -671,7 +671,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		list << value
 	}
 
-	private Map generateChildElementXmlMap(List maps, String env, Map classNames, String nodeName) {
+	protected Map generateChildElementXmlMap(List maps, String env, Map classNames, String nodeName) {
 		Map xmls = [:]
 		for (data in maps) {
 			if (isValidInEnv(data, env)) {
@@ -682,7 +682,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		xmls
 	}
 
-	private void appendFactoryXmls(StringBuilder xml, List names, Map xmls) {
+	protected void appendFactoryXmls(StringBuilder xml, List names, Map xmls) {
 		for (name in names) {
 			String factoryXml = xmls[name]
 			if (factoryXml) {
@@ -691,7 +691,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		}
 	}
 
-	private String getValue(Map m, String name, defaultIfNotSpecified) {
+	protected String getValue(Map m, String name, defaultIfNotSpecified) {
 		def value = m[name]
 		if (value == null) {
 			value = defaultIfNotSpecified
