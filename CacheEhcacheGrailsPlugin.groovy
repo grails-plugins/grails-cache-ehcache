@@ -81,13 +81,13 @@ class CacheEhcacheGrailsPlugin {
 			configLocation = ehcacheConfigLocation
 		}
 
-		cacheManager(GrailsEhcacheCacheManager) {
+		grailsCacheManager(GrailsEhcacheCacheManager) {
 			cacheManager = ref('ehcacheCacheManager')
 			additionalCacheNames = cacheConfig.additionalCacheNames ?: []
 		}
 
 		grailsCacheFilter(EhcachePageFragmentCachingFilter) {
-			cacheManager = ref('cacheManager')
+			cacheManager = ref('grailsCacheManager')
 			nativeCacheManager = ref('ehcacheCacheManager')
 			// TODO this name might be brittle - perhaps do by type?
 			cacheOperationSource = ref('org.springframework.cache.annotation.AnnotationCacheOperationSource#0')
