@@ -38,6 +38,8 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute '0', 'maxBytesLocalOffHeap'
 		assertAttribute '0', 'maxBytesLocalDisk'
 
+		builder = null
+
 		parse {
 			provider {
 				updateCheck true
@@ -71,6 +73,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertEquals 1, diskStores.size()
 		assertAttribute 'java.io.tmpdir', 'path', diskStores[0]
 
+		builder = null
 		parse {
 			diskStore {
 				path '/tmp/ehcache'
@@ -81,6 +84,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertEquals 1, diskStores.size()
 		assertAttribute '/tmp/ehcache', 'path', diskStores[0]
 
+		builder = null
 		parse {
 			diskStore {
 				home true
@@ -91,6 +95,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertEquals 1, diskStores.size()
 		assertAttribute 'user.home', 'path', diskStores[0]
 
+		builder = null
 		parse {
 			diskStore {
 				current true
@@ -339,6 +344,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 
 		Environment.metaClass.getName = { -> 'staging' }
 
+		builder = null
 		parse config
 
 		caches = root.cache
@@ -349,6 +355,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 
 		Environment.metaClass.getName = { -> 'production' }
 
+		builder = null
 		parse config
 
 		caches = root.cache
@@ -472,12 +479,58 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 
+	void testOverrides() {
+
+		parse {
+			domain {
+				name 'com.foo.Thing'
+				eternal false
+				overflowToDisk true
+				maxElementsInMemory 10000
+				maxElementsOnDisk 10000000
+				type 'com.foo.BarCache'
+				someOtherProperty 42
+				nested {
+					bar 123
+				}
+			}
+		}
+
+		parse {
+			domain {
+				name 'com.foo.Thing'
+				eternal false
+				overflowToDisk false
+				maxElementsInMemory 10000
+				maxElementsOnDisk 0
+				someNewProperty 'blue'
+				nested {
+					bar 123
+				}
+			}
+			cache {
+				name 'com.foo.Other'
+			}
+		}
+
+		def caches = root.cache
+		assertEquals 2, caches.size()
+		def cache = caches[0]
+		assertAttribute 'com.foo.Thing', 'name', cache
+		assertAttribute 'false', 'eternal', cache
+		assertAttribute 'false', 'overflowToDisk', cache
+		assertAttribute '10000', 'maxElementsInMemory', cache
+		assertAttribute '0', 'maxElementsOnDisk', cache
+	}
+
 	protected void assertAttribute(String expected, String name, node = root) {
 		assertEquals expected, node."@$name".text()
 	}
 
 	protected void parse(Closure config) {
-		builder = new EhcacheConfigBuilder()
+		if (!builder) {
+			builder = new EhcacheConfigBuilder()
+		}
 		builder.parse config
 		xml = builder.toXml()
 		root = new XmlSlurper().parseText(xml)

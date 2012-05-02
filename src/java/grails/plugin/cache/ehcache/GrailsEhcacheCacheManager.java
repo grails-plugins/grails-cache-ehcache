@@ -14,6 +14,8 @@
  */
 package grails.plugin.cache.ehcache;
 
+import grails.plugin.cache.GrailsCacheManager;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -36,7 +38,7 @@ import org.springframework.util.Assert;
  * @author Juergen Hoeller
  * @author Burt Beckwith
  */
-public class GrailsEhcacheCacheManager extends AbstractCacheManager {
+public class GrailsEhcacheCacheManager extends AbstractCacheManager implements GrailsCacheManager {
 
 	protected Logger log = LoggerFactory.getLogger(getClass());
 
@@ -62,15 +64,27 @@ public class GrailsEhcacheCacheManager extends AbstractCacheManager {
 	public Cache getCache(String name) {
 		Cache cache = super.getCache(name);
 		if (cache == null) {
-			// check the EhCache cache again
-			// (in case the cache was added at runtime)
+			// check the EhCache cache again (in case the cache was added at runtime)
 			Ehcache ehcache = cacheManager.getEhcache(name);
-			if (ehcache != null) {
-				cache = new GrailsEhcacheCache(ehcache);
-				addCache(cache);
+			if (ehcache == null) {
+				// create a new one based on defaults
+				cacheManager.addCache(name);
+				ehcache = cacheManager.getEhcache(name);
 			}
+
+			cache = new GrailsEhcacheCache(ehcache);
+			addCache(cache);
 		}
 		return cache;
+	}
+
+	public boolean cacheExists(String name) {
+		return getCacheNames().contains(name);
+	}
+
+	public boolean destroyCache(String name) {
+		cacheManager.removeCache(name);
+		return true;
 	}
 
 	/**

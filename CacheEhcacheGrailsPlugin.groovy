@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 import grails.plugin.cache.ehcache.EhcacheConfigBuilder
+import grails.plugin.cache.ehcache.EhcacheConfigLoader
+import grails.plugin.cache.ehcache.GrailsEhCacheManagerFactoryBean
 import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
 import grails.plugin.cache.web.filter.ehcache.EhcachePageFragmentCachingFilter
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.cache.ehcache.EhCacheManagerFactoryBean
 import org.springframework.core.io.ByteArrayResource
 
 class CacheEhcacheGrailsPlugin {
@@ -29,6 +30,7 @@ class CacheEhcacheGrailsPlugin {
 	String version = '0.2-SNAPSHOT'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
+	def pluginExcludes = ['scripts/CreateCacheEhcacheTestApps.groovy']
 
 	String title = 'Ehcache Cache Plugin'
 	String author = 'Burt Beckwith'
@@ -50,13 +52,10 @@ class CacheEhcacheGrailsPlugin {
 		def cacheConfig = application.config.grails.cache
 		def ehcacheConfig = cacheConfig.ehcache
 		def ehcacheConfigLocation
-		if (cacheConfig.config instanceof Closure) {
-			// parse the config into XML and let Ehcache configure itself from that
-			EhcacheConfigBuilder builder = new EhcacheConfigBuilder()
-			builder.parse cacheConfig.config
-			String xml = builder.toXml()
-			log.debug "Ehcache generated XML:\n$xml"
-			ehcacheConfigLocation = new ByteArrayResource(xml.bytes)
+		if (cacheConfig.config instanceof Closure || application.cacheConfigClasses) {
+			// leave the location null to indicate that the real configuration will
+			// happen in doWithApplicationContext (from the core plugin, using this
+			// plugin's grailsCacheConfigLoader)
 		}
 		else if (ehcacheConfig.ehcacheXmlLocation instanceof CharSequence) {
 			// use the specified location
@@ -74,12 +73,15 @@ class CacheEhcacheGrailsPlugin {
 			}
 			else {
 				log.error "No Ehcache configuration file specified and default file not found"
+				ehcacheConfigLocation = defaults[1] // won't work but will fail more helpfully
 			}
 		}
 
-		ehcacheCacheManager(EhCacheManagerFactoryBean) {
+		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) {
 			configLocation = ehcacheConfigLocation
 		}
+
+		grailsCacheConfigLoader(EhcacheConfigLoader)
 
 		grailsCacheManager(GrailsEhcacheCacheManager) {
 			cacheManager = ref('ehcacheCacheManager')

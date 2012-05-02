@@ -51,9 +51,20 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		[rmi: 'net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory',
 		 jgroups: 'net.sf.ehcache.distribution.jgroups.JGroupsBootstrapCacheLoaderFactory'] // no JMS
 
+	protected static final Map DEFAULT_DEFAULT_CACHE = [
+		maxElementsInMemory: 10000,
+		eternal: false,
+		timeToIdleSeconds: 120,
+		timeToLiveSeconds: 120,
+		overflowToDisk: true,
+		maxElementsOnDisk: 10000000,
+		diskPersistent: false,
+		diskExpiryThreadIntervalSeconds: 120,
+		memoryStoreEvictionPolicy: 'LRU']
+
 	protected List<String> _stack = []
 	protected List<Map<String, Object>> _caches = []
-	protected Map<String, Object> _defaultCache = [:]
+	protected Map<String, Object> _defaultCache
 	protected Map<String, Object> _defaults = [:]
 	protected Map<String, Object> _hibernateQuery = [
 		name: 'org.hibernate.cache.StandardQueryCache', maxElementsInMemory: 50,
@@ -63,15 +74,15 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		eternal: true, overflowToDisk: false, maxElementsOnDisk: 0]
 	protected Map<String, Object> _cacheManagerPeerListenerFactory // can be empty, so exists == not null
 	protected Map<String, Object> _cacheManagerEventListenerFactory = [:]
+	protected Map<String, Object> _bootstrapCacheLoaderFactory = [:]
+	protected Map<String, Object> _cacheExceptionHandlerFactory = [:]
 	protected Map<String, Object> _provider = [:]
 	protected List<Map<String, Object>> _cacheEventListenerFactories = []
-	protected List<Map<String, Object>> _bootstrapCacheLoaderFactories = []
-	protected List<Map<String, Object>> _cacheExceptionHandlerFactories = []
 	protected List<Map<String, Object>> _cacheLoaderFactories = []
 	protected List<Map<String, Object>> _cacheExtensionFactories = []
+	protected List<Map<String, Object>> _cacheManagerPeerProviderFactories = []
 	protected Map<String, Object> _current
 	protected String _diskStore = TEMP_DIR
-	protected List<Map<String, Object>> _cacheManagerPeerProviderFactories = []
 	protected int _unrecognizedElementDepth = 0
 
 	protected final Logger _log = LoggerFactory.getLogger(getClass())
@@ -116,6 +127,8 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		c.delegate = this
 		c.resolveStrategy = Closure.DELEGATE_FIRST
 		c()
+
+		resolveProperties()
 	}
 
 	@Override
@@ -131,25 +144,35 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		switch (name) {
 			case 'provider':
 			case 'diskStore':
-			case 'defaultCache':
 			case 'defaults':
 			case 'cacheManagerEventListenerFactory':
+			case 'bootstrapCacheLoaderFactory':
+			case 'cacheExceptionHandlerFactory':
+				_stack.push name
+				return name
+
+			case 'defaultCache':
+				if (_defaultCache == null) {
+					_defaultCache = [:]
+				}
 				_stack.push name
 				return name
 
 			case 'cacheManagerPeerListenerFactory':
-				_cacheManagerPeerListenerFactory = [:]
+				if (_cacheManagerPeerListenerFactory == null) {
+					_cacheManagerPeerListenerFactory = [:]
+				}
 				_stack.push name
 				return name
 
 			case 'hibernateQuery':
 				_stack.push name
-				_caches << _hibernateQuery
+				_caches << _hibernateQuery.clone()
 				return name
 
 			case 'hibernateTimestamps':
 				_stack.push name
-				_caches << _hibernateTimestamps
+				_caches << _hibernateTimestamps.clone()
 				return name
 
 			case 'domainCollection':
@@ -170,18 +193,6 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			case 'cacheEventListenerFactory':
 				_current = [:]
 				_cacheEventListenerFactories << _current
-				_stack.push name
-				return name
-
-			case 'bootstrapCacheLoaderFactory':
-				_current = [:]
-				_bootstrapCacheLoaderFactories << _current
-				_stack.push name
-				return name
-
-			case 'cacheExceptionHandlerFactory':
-				_current = [:]
-				_cacheExceptionHandlerFactories << _current
 				_stack.push name
 				return name
 
@@ -336,6 +347,11 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				_cacheManagerEventListenerFactory[name] = value
 				return name
 
+			case 'bootstrapCacheLoaderFactory':
+				// allow all properties for forward compatability
+				_bootstrapCacheLoaderFactory[name] = value
+				return name
+
 			case 'provider':
 				if (name in PROVIDER_NAMES) {
 					_provider[name] = value
@@ -344,8 +360,6 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				break
 
 			case 'cacheEventListenerFactory':
-			case 'bootstrapCacheLoaderFactory':
-			case 'cacheExceptionHandlerFactory':
 			case 'cacheLoaderFactory':
 			case 'cacheExtensionFactory':
 				// allow all properties for forward compatability
@@ -402,19 +416,27 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		String env = Environment.current.name
 
 		Map cacheEventListenerFactoriesXml = generateChildElementXmlMap(_cacheEventListenerFactories,
-				env, CACHE_EVENT_LISTENER_FACTORIES, 'cacheEventListenerFactory')
+				env, 'cacheEventListenerFactory')
 
-		Map bootstrapCacheLoaderFactoriesXml = generateChildElementXmlMap(_bootstrapCacheLoaderFactories,
-				env, BOOTSTRAP_CACHE_LOADER_FACTORIES, 'bootstrapCacheLoaderFactory')
+		def factories = []
+		if (_bootstrapCacheLoaderFactory) {
+			factories << _bootstrapCacheLoaderFactory
+		}
+		Map bootstrapCacheLoaderFactoriesXml = generateChildElementXmlMap(factories,
+				env, 'bootstrapCacheLoaderFactory')
 
-		Map cacheExceptionHandlerFactoriesXml = generateChildElementXmlMap(_cacheExceptionHandlerFactories,
-						env, [:], 'cacheExceptionHandlerFactory')
+		factories = []
+		if (_cacheExceptionHandlerFactory) {
+			factories << _cacheExceptionHandlerFactory
+		}
+		Map cacheExceptionHandlerFactoriesXml = generateChildElementXmlMap(factories,
+						env, 'cacheExceptionHandlerFactory')
 
 		Map cacheLoaderFactoriesXml = generateChildElementXmlMap(_cacheLoaderFactories,
-				env, [:], 'cacheLoaderFactory')
+				env, 'cacheLoaderFactory')
 
 		Map cacheExtensionFactoriesXml = generateChildElementXmlMap(_cacheExtensionFactories,
-				env, [:], 'cacheExtensionFactory')
+				env, 'cacheExtensionFactory')
 
 		StringBuilder xml = new StringBuilder()
 		xml.append '<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd"'
@@ -436,11 +458,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			xml.append """$LF$INDENT<diskStore path="$_diskStore" />$LF"""
 		}
 
-		if (_defaultCache) {
-			appendCache xml, 'defaultCache', _defaultCache, env, cacheEventListenerFactoriesXml,
-				bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
-				cacheLoaderFactoriesXml, cacheExtensionFactoriesXml
+		if (_defaultCache == null) {
+			_defaultCache = DEFAULT_DEFAULT_CACHE
 		}
+
+		appendCache xml, 'defaultCache', _defaultCache, env, cacheEventListenerFactoriesXml,
+			bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
+			cacheLoaderFactoriesXml, cacheExtensionFactoriesXml
 
 		for (data in _cacheManagerPeerProviderFactories) {
 			appendCacheManagerPeerProviderFactory xml, data, env
@@ -451,10 +475,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		appendCacheManagerEventListenerFactory xml, env
 
 		for (data in _caches) {
-			Map<String, Object> cache = [:]
-			cache.putAll _defaults
-			cache.putAll data
-			appendCache xml, 'cache', cache, env, cacheEventListenerFactoriesXml,
+			appendCache xml, 'cache', data, env, cacheEventListenerFactoriesXml,
 				bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
 				cacheLoaderFactoriesXml, cacheExtensionFactoriesXml
 		}
@@ -472,7 +493,6 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		if (data.domain) {
 			// collection
 			data.name = "${data.domain}.$data.name"
-			data.remove 'domain'
 		}
 
 		if (!isValidInEnv(data, env)) {
@@ -482,18 +502,21 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 		xml.append "$LF$INDENT<$type "
 
-		String name = data.remove('name')
+		String name = data.name
 		if (name) {
 			xml.append('name="').append(name).append('"')
 		}
 
-		List cacheEventListenerFactoryNames = data.remove('cacheEventListenerFactoryName')
-		List bootstrapCacheLoaderFactoryNames = data.remove('bootstrapCacheLoaderFactoryName')
-		List cacheExceptionHandlerFactoryNames = data.remove('cacheExceptionHandlerFactoryName')
-		List cacheLoaderFactoryNames = data.remove('cacheLoaderFactoryName')
-		List cacheExtensionFactoryNames = data.remove('cacheExtensionFactoryName')
+		List cacheEventListenerFactoryNames = data.cacheEventListenerFactoryName
+		List bootstrapCacheLoaderFactoryNames = data.bootstrapCacheLoaderFactoryName
+		List cacheExceptionHandlerFactoryNames = data.cacheExceptionHandlerFactoryName
+		List cacheLoaderFactoryNames = data.cacheLoaderFactoryName
+		List cacheExtensionFactoryNames = data.cacheExtensionFactoryName
 
 		data.each { key, value ->
+			if (key in ['name', 'domain', 'cacheEventListenerFactoryName',
+			            'bootstrapCacheLoaderFactoryName', 'cacheExceptionHandlerFactoryName',
+							'cacheLoaderFactoryName', 'cacheExtensionFactoryName']) return
 			xml.append LF
 			xml.append INDENT
 			appendProperty xml, key, value, '       ', true
@@ -521,25 +544,21 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 	protected void appendCacheManagerPeerProviderFactory(StringBuilder xml, Map data, String env) {
 
-		String type = data.remove('factoryType')
-		String className = data.remove('className')
-		if (!className) {
-			className = CACHE_MANAGER_PEER_PROVIDERS[type]
-		}
-
 		if (!isValidInEnv(data, env)) {
 			_log.debug "skipping cacheManagerPeerProviderFactory $className since it's not valid in env '$env'"
 			return
 		}
 
-		String timeToLive = data.remove('timeToLive')
+		String timeToLive = data.timeToLive
 		if (timeToLive) {
 			data.timeToLive = TTL[timeToLive] // replace string with number
 		}
 
+		String className = data.className
+		String type = data.factoryType
 		switch (type) {
 			case 'rmi':
-				def rmiUrls = data.remove('rmiUrls')
+				def rmiUrls = data.rmiUrls
 				if (rmiUrls) {
 					data.peerDiscovery = 'manual'
 					data.rmiUrls = rmiUrls.join('|')
@@ -567,7 +586,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected void appendCacheManagerPeerProviderFactoryNode(StringBuilder xml, Map data,
 			String delimiter, String className) {
 
-		String properties = joinProperties(data, delimiter)
+		String properties = joinProperties(data, delimiter, ['className', 'factoryType', 'rmiUrls'])
 		appendSimpleNodeWithProperties xml, 'cacheManagerPeerProviderFactory', className, properties, delimiter
 	}
 
@@ -581,9 +600,8 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			return
 		}
 
-		String className = _cacheManagerPeerListenerFactory.remove('className') ?:
-			'net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory'
-		String properties = joinProperties(_cacheManagerPeerListenerFactory, ',')
+		String className = _cacheManagerPeerListenerFactory.className
+		String properties = joinProperties(_cacheManagerPeerListenerFactory, ',', ['className'])
 
 		appendSimpleNodeWithProperties xml, 'cacheManagerPeerListenerFactory', className, properties, ','
 	}
@@ -598,34 +616,31 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			return
 		}
 
-		String className = _cacheManagerEventListenerFactory.remove('className')
-		String properties = joinProperties(_cacheManagerEventListenerFactory, ',')
+		String className = _cacheManagerEventListenerFactory.className
+		String properties = joinProperties(_cacheManagerEventListenerFactory, ',', ['className'])
 
 		appendSimpleNodeWithProperties xml, 'cacheManagerEventListenerFactory', className, properties, ','
 	}
 
-	protected String generateChildElementXml(Map data, Map classNames, String nodeName) {
+	protected String generateChildElementXml(Map data, String nodeName) {
 
 		def xml = new StringBuilder()
 
-		String type = data.remove('factoryType')
-		String className = data.remove('className')
-		if (!className) {
-			className = classNames[type]
-		}
-
-		String properties = joinProperties(data, ',')
+		String type = data.factoryType
+		String className = data.className
+		String properties = joinProperties(data, ',', ['factoryType', 'className', 'name'])
 
 		appendSimpleNodeWithProperties xml, nodeName, className, properties, ',', 2
 
 		xml.toString()
 	}
 
-	protected String joinProperties(Map data, String delimiter) {
+	protected String joinProperties(Map data, String delimiter, List ignoredNames) {
 
 		StringBuilder properties = new StringBuilder()
 		String delim = ''
 		data.each { key, value ->
+			if (key == 'env' || key in ignoredNames) return
 			appendProperty properties, key, value, delim, false
 			delim = delimiter
 		}
@@ -641,7 +656,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	}
 
 	protected boolean isValidInEnv(Map data, String env) {
-		def environments = data.remove('env') ?: []
+		def environments = data.env ?: []
 		if (!(environments instanceof List)) {
 			environments = [environments]
 		}
@@ -653,12 +668,15 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				String properties, String delimiter, int indentCount = 1) {
 
 		String indent = INDENT.multiply(indentCount)
-		xml.append "$LF$indent<$nodeName class='$className'$LF"
+		xml.append "$LF$indent<$nodeName class='$className'"
 		if (properties) {
-			xml.append """$indent${INDENT}properties="$properties"$LF"""
-			xml.append "$indent${INDENT}propertySeparator='$delimiter'$LF"
+			xml.append """$LF$indent${INDENT}properties="$properties"$LF"""
+			xml.append "$indent${INDENT}propertySeparator='$delimiter'$LF$indent"
 		}
-		xml.append "$indent/>$LF"
+		else {
+			xml.append ' '
+		}
+		xml.append "/>$LF"
 	}
 
 	protected void addToList(Map data, String listName, value) {
@@ -671,12 +689,12 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		list << value
 	}
 
-	protected Map generateChildElementXmlMap(List maps, String env, Map classNames, String nodeName) {
+	protected Map generateChildElementXmlMap(List maps, String env, String nodeName) {
 		Map xmls = [:]
 		for (data in maps) {
 			if (isValidInEnv(data, env)) {
-				String name = data.remove('name')
-				xmls[name] = generateChildElementXml(data, classNames, nodeName)
+				String name = data.name
+				xmls[name] = generateChildElementXml(data, nodeName)
 			}
 		}
 		xmls
@@ -697,5 +715,87 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			value = defaultIfNotSpecified
 		}
 		value
+	}
+
+	protected void resolveProperties() {
+		mergeCaches()
+
+		setDefaults()
+
+		resolveCacheManagerPeerListenerFactoryProperties()
+		resolveCacheManagerPeerProviderFactoryProperties()
+		resolveBootstrapCacheLoaderFactoryProperties()
+		resolveCacheEventListenerFactoryProperties()
+
+		mergeFactories _cacheLoaderFactories
+		mergeFactories _cacheExtensionFactories
+	}
+
+	protected void setDefaults() {
+		for (data in _caches) {
+			Map<String, Object> withDefaults = [:]
+			withDefaults.putAll _defaults
+			withDefaults.putAll data
+			data.clear()
+			data.putAll withDefaults
+		}
+	}
+
+	protected void mergeCaches() {
+		mergeDefinitions _caches, 'name'
+	}
+
+	protected void mergeFactories(List<Map<String, Object>> factories) {
+		mergeDefinitions factories, 'className'
+	}
+
+	protected void mergeDefinitions(List<Map<String, Object>> definitions, String propertyName) {
+		int count = definitions.size()
+		for (int i = 0; i < count; i++) {
+			for (int j = i + 1; j < count; j++) {
+				if (definitions[j][propertyName] == definitions[i][propertyName]) {
+					definitions[i].putAll definitions[j]
+					definitions.remove j
+					count--
+					j--
+				}
+			}
+		}
+	}
+
+	protected void resolveCacheManagerPeerListenerFactoryProperties() {
+		if (_cacheManagerPeerListenerFactory && !_cacheManagerPeerListenerFactory.className) {
+			_cacheManagerPeerListenerFactory.className = 'net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory'
+		}
+	}
+
+	protected void resolveCacheManagerPeerProviderFactoryProperties() {
+		for (data in _cacheManagerPeerProviderFactories) {
+			String type = data.factoryType
+			if (type && !data.className) {
+				data.className = CACHE_MANAGER_PEER_PROVIDERS[type]
+			}
+		}
+		mergeFactories _cacheManagerPeerProviderFactories
+	}
+
+	protected void resolveBootstrapCacheLoaderFactoryProperties() {
+		if (_bootstrapCacheLoaderFactory) {
+			resolveClassName([_bootstrapCacheLoaderFactory], BOOTSTRAP_CACHE_LOADER_FACTORIES)
+		}
+	}
+
+	protected void resolveCacheEventListenerFactoryProperties() {
+		resolveClassName _cacheEventListenerFactories, CACHE_EVENT_LISTENER_FACTORIES
+		mergeFactories _cacheEventListenerFactories
+	}
+
+	protected void resolveClassName(List<Map<String, Object>> definitions, Map<String, String> classNames) {
+		for (data in definitions) {
+			String type = data.factoryType
+			if (type && !data.className) {
+				data.className = classNames[type]
+			}
+		}
 	}
 }
