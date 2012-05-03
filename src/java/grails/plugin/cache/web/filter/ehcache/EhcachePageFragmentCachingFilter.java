@@ -47,7 +47,7 @@ public class EhcachePageFragmentCachingFilter extends PageFragmentCachingFilter 
 			Element e = (Element)((GrailsValueWrapper)wrapper).getNativeWrapper();
 			return e.getTimeToLive();
 		}
-		return 0;
+		return Integer.MAX_VALUE;
 	}
 
 	@Override
