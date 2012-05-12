@@ -25,7 +25,7 @@ import net.sf.ehcache.Ehcache;
  */
 public class EhcacheBlockingCache extends GrailsEhcacheCache implements BlockingCache {
 
-	private final EhcacheCacheConfiguration configuration;
+	protected final EhcacheCacheConfiguration configuration;
 
 	public EhcacheBlockingCache(Ehcache ehcache) {
 		super(new net.sf.ehcache.constructs.blocking.BlockingCache(ehcache));
