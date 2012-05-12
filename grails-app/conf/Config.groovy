@@ -6,7 +6,7 @@ log4j = {
 	debug 'grails.plugin.cache'
 }
 
-// for unit tests
+// for tests
 grails.cache.config = {
 	cache {
 		name 'mycache'
@@ -14,5 +14,9 @@ grails.cache.config = {
 		overflowToDisk true
 		maxElementsInMemory 10000
 		maxElementsOnDisk 10000000
+	}
+
+	defaults {
+		timeToLiveSeconds 1234
 	}
 }
