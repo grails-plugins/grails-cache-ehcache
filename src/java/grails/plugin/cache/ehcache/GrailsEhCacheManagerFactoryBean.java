@@ -17,6 +17,7 @@ package grails.plugin.cache.ehcache;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Based on org.springframework.cache.ehcache.EhCacheManagerFactoryBean.
@@ -121,6 +123,15 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 	      }
 
 			status = Status.STATUS_UNINITIALISED;
+
+			// TODO ugly hack since the field is private
+			Field diskStorePath = ReflectionUtils.findField(getClass(), "diskStorePath", String.class);
+			ReflectionUtils.makeAccessible(diskStorePath);
+			ReflectionUtils.setField(diskStorePath, this, null);
+
+			// remove since it's going to be re-added
+			ALL_CACHE_MANAGERS.remove(this);
+
 	      init(null, null, null, location.getInputStream());
 		}
 	}
