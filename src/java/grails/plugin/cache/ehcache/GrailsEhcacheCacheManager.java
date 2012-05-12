@@ -17,8 +17,11 @@ package grails.plugin.cache.ehcache;
 import grails.plugin.cache.GrailsCacheManager;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -26,8 +29,8 @@ import net.sf.ehcache.Status;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cache.Cache;
-import org.springframework.cache.support.AbstractCacheManager;
 import org.springframework.util.Assert;
 
 /**
@@ -38,31 +41,17 @@ import org.springframework.util.Assert;
  * @author Juergen Hoeller
  * @author Burt Beckwith
  */
-public class GrailsEhcacheCacheManager extends AbstractCacheManager implements GrailsCacheManager {
+public class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean {
 
 	protected Logger log = LoggerFactory.getLogger(getClass());
 
 	protected CacheManager cacheManager;
-	protected List<String> additionalCacheNames;
+	protected final ConcurrentMap<String, Cache> cacheMap = new ConcurrentHashMap<String, Cache>();
+	protected Set<String> cacheNames = new LinkedHashSet<String>();
 
-	@Override
-	protected Collection<Cache> loadCaches() {
-		Assert.notNull(cacheManager, "A backing EhCache CacheManager is required");
-		Status status = cacheManager.getStatus();
-		Assert.isTrue(Status.STATUS_ALIVE.equals(status),
-				"An 'alive' EhCache CacheManager is required - current cache is " + status);
-
-		String[] names = cacheManager.getCacheNames();
-		Collection<Cache> caches = new LinkedHashSet<Cache>(names.length);
-		for (String name : names) {
-			caches.add(new GrailsEhcacheCache(cacheManager.getEhcache(name)));
-		}
-		return caches;
-	}
-
-	@Override
 	public Cache getCache(String name) {
-		Cache cache = super.getCache(name);
+
+		Cache cache = cacheMap.get(name);
 		if (cache == null) {
 			// check the EhCache cache again (in case the cache was added at runtime)
 			Ehcache ehcache = cacheManager.getEhcache(name);
@@ -84,7 +73,32 @@ public class GrailsEhcacheCacheManager extends AbstractCacheManager implements G
 
 	public boolean destroyCache(String name) {
 		cacheManager.removeCache(name);
+		cacheMap.remove(name);
+		cacheNames.remove(name);
 		return true;
+	}
+
+	public Collection<String> getCacheNames() {
+		return Collections.unmodifiableSet(cacheNames);
+	}
+
+	protected Collection<Cache> loadCaches() {
+		Assert.notNull(cacheManager, "A backing EhCache CacheManager is required");
+		Status status = cacheManager.getStatus();
+		Assert.isTrue(Status.STATUS_ALIVE.equals(status),
+				"An 'alive' EhCache CacheManager is required - current cache is " + status);
+
+		String[] names = cacheManager.getCacheNames();
+		Collection<Cache> caches = new LinkedHashSet<Cache>(names.length);
+		for (String name : names) {
+			caches.add(new GrailsEhcacheCache(cacheManager.getEhcache(name)));
+		}
+		return caches;
+	}
+
+	protected void addCache(Cache cache) {
+		cacheMap.put(cache.getName(), cache);
+		cacheNames.add(cache.getName());
 	}
 
 	/**
@@ -92,14 +106,6 @@ public class GrailsEhcacheCacheManager extends AbstractCacheManager implements G
 	 */
 	public void setCacheManager(CacheManager manager) {
 		cacheManager = manager;
-	}
-
-	/**
-	 * Dependency injection for optional names of caches to create with default settings.
-	 * @param names
-	 */
-	public void setAdditionalCacheNames(List<String> names) {
-		additionalCacheNames = names;
 	}
 
 	@Override
@@ -110,22 +116,11 @@ public class GrailsEhcacheCacheManager extends AbstractCacheManager implements G
 			return;
 		}
 
-		String[] registered = cacheManager.getCacheNames();
-		int cacheCount = registered == null ? 0 : registered.length;
-		cacheCount += additionalCacheNames == null ? 0 : additionalCacheNames.size();
-		if (cacheCount == 0) {
-			// AbstractCacheManager requires at least one
-			cacheManager.addCache("_default");
+		Collection<? extends Cache> caches = loadCaches();
+		// preserve the initial order of the cache names
+		for (Cache cache : caches) {
+			addCache(cache);
 		}
-
-		if (additionalCacheNames != null) {
-			for (String name : additionalCacheNames) {
-				// creates a cache with the default settings in ehcache.xml
-				cacheManager.addCache(name);
-			}
-		}
-
-		super.afterPropertiesSet();
 
 		log.debug("Cache names: {}", getCacheNames());
 	}
