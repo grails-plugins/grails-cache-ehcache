@@ -30,7 +30,12 @@ class CacheEhcacheGrailsPlugin {
 	String version = '1.0.0.M1'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
-	def pluginExcludes = ['scripts/CreateCacheEhcacheTestApps.groovy']
+	def pluginExcludes = [
+		'grails-app/conf/*CacheConfig.groovy',
+		'scripts/CreateCacheEhcacheTestApps.groovy',
+		'docs/**',
+		'src/docs/**'
+	]
 
 	String title = 'Ehcache Cache Plugin'
 	String author = 'Burt Beckwith'
@@ -85,7 +90,6 @@ class CacheEhcacheGrailsPlugin {
 
 		grailsCacheManager(GrailsEhcacheCacheManager) {
 			cacheManager = ref('ehcacheCacheManager')
-			additionalCacheNames = cacheConfig.additionalCacheNames ?: []
 		}
 
 		grailsCacheFilter(EhcachePageFragmentCachingFilter) {
