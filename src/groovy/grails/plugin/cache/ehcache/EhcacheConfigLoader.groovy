@@ -14,8 +14,6 @@
  */
 package grails.plugin.cache.ehcache
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.ByteArrayResource
 
@@ -27,15 +25,10 @@ import grails.plugin.cache.ehcache.GrailsEhCacheManagerFactoryBean.ReloadableCac
  */
 class EhcacheConfigLoader extends ConfigLoader {
 
-	protected Logger log = LoggerFactory.getLogger(getClass())
-
 	void reload(List<ConfigObject> configs, ApplicationContext ctx) {
 
-		// process in reverse order so lower order values have higher priority
-		// and can override previous settings
 		EhcacheConfigBuilder builder = new EhcacheConfigBuilder()
-		for (ListIterator<ConfigObject> iter = configs.listIterator(configs.size()); iter.hasPrevious(); ) {
-			ConfigObject co = iter.previous()
+		for (ConfigObject co : configs) {
 			def config = co.config
 			if (config instanceof Closure) {
 				builder.parse config
@@ -46,7 +39,17 @@ class EhcacheConfigLoader extends ConfigLoader {
 		log.debug "Ehcache generated XML:\n$xml"
 
 		GrailsEhcacheCacheManager cacheManager = ctx.grailsCacheManager
+
+		// make copy of names to avoid CME
+		for (String name in ([] + cacheManager.cacheNames)) {
+			cacheManager.destroyCache name
+		}
+
 		ReloadableCacheManager nativeCacheManager = cacheManager.cacheManager
 		nativeCacheManager.rebuild new ByteArrayResource(xml.bytes)
+
+		for (String cacheName in nativeCacheManager.cacheNames) {
+			cacheManager.getCache cacheName
+		}
 	}
 }
