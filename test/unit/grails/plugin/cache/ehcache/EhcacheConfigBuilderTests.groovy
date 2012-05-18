@@ -368,7 +368,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 
 		Environment.metaClass.getName = { -> 'production' }
 
-		parse {
+		def config = {
 
 			defaults {
 				maxElementsInMemory 1000
@@ -402,6 +402,8 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 			}
 		}
 
+		parse config
+
 		def cacheManagerPeerProviderFactoryNodes = root.cacheManagerPeerProviderFactory
 		assertEquals 1, cacheManagerPeerProviderFactoryNodes.size()
 		def factory = cacheManagerPeerProviderFactoryNodes[0]
@@ -431,6 +433,28 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute 'net.sf.ehcache.distribution.RMICacheReplicatorFactory', 'class', factory
 		assertAttribute 'replicateAsynchronously=false', 'properties', factory
 		assertAttribute ',', 'propertySeparator', factory
+
+		// now check that there's no distributed in non-prod
+
+		Environment.metaClass.getName = { -> 'development' }
+		parse config
+
+		cacheManagerPeerProviderFactoryNodes = root.cacheManagerPeerProviderFactory
+		assertEquals 0, cacheManagerPeerProviderFactoryNodes.size()
+
+		cacheManagerPeerListenerFactoryNodes = root.cacheManagerPeerListenerFactory
+		assertEquals 0, cacheManagerPeerListenerFactoryNodes.size()
+
+		caches = root.cache
+		assertEquals 1, caches.size()
+		assertAttribute 'com.foo.Book', 'name', caches[0]
+		assertAttribute '1000', 'maxElementsInMemory', caches[0]
+		assertAttribute 'false', 'eternal', caches[0]
+		assertAttribute 'false', 'overflowToDisk', caches[0]
+		assertAttribute '0', 'maxElementsOnDisk', caches[0]
+
+		cacheEventListenerFactoryNodes = caches[0].cacheEventListenerFactory
+		assertEquals 0, cacheEventListenerFactoryNodes.size()
 	}
 
 	void testFromConfigGroovy() {
