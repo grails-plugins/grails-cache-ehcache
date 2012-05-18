@@ -545,12 +545,12 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected void appendCacheManagerPeerProviderFactory(StringBuilder xml, Map data, String env) {
 
 		if (!isValidInEnv(data, env)) {
-			_log.debug "skipping cacheManagerPeerProviderFactory $className since it's not valid in env '$env'"
+			_log.debug "skipping cacheManagerPeerProviderFactory $data.className since it's not valid in env '$env'"
 			return
 		}
 
 		String timeToLive = data.timeToLive
-		if (timeToLive) {
+		if (timeToLive && TTL[timeToLive]) {
 			data.timeToLive = TTL[timeToLive] // replace string with number
 		}
 
