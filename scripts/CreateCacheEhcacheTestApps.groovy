@@ -26,6 +26,7 @@ target(createCacheEhcacheTestApps: 'Creates test apps for functional tests') {
 		installPlugins()
 		copyProjectFiles()
 		copyTests()
+		generateFiles()
 	}
 }
 
@@ -56,12 +57,17 @@ private void installPlugins() {
 	contents += '''
 
 grails.cache.config = {
+	defaults {
+		eternal false
+		overflowToDisk false
+		maxElementsInMemory 100
+		maxElementsOnDisk 0
+	}
 	cache {
 		name 'message'
-		eternal false
-		overflowToDisk true
-		maxElementsInMemory 10000
-		maxElementsOnDisk 10000000
+	}
+	cache {
+		name 'book'
 	}
 }
 
@@ -83,9 +89,23 @@ grails.cache.config = {
 
 private void copyProjectFiles() {
 
+	ant.copy(todir: "$testprojectRoot/grails-app/conf", overwrite: true) {
+		fileset(dir: projectfiles.path) {
+			include name: 'DataSource.groovy'
+			include name: 'UrlMappings.groovy'
+		}
+	}
+
 	ant.copy(todir: "$testprojectRoot/grails-app/controllers") {
 		fileset(dir: projectfiles.path) {
 			include name: '*Controller.groovy'
+		}
+	}
+
+	ant.copy(todir: "$testprojectRoot/grails-app/domain") {
+		fileset(dir: projectfiles.path) {
+			include name: 'Book.groovy'
+			include name: 'LogEntry.groovy'
 		}
 	}
 
@@ -95,15 +115,44 @@ private void copyProjectFiles() {
 		}
 	}
 
-	ant.copy file: "$projectfiles.path/LogEntry.groovy", todir: "$testprojectRoot/grails-app/domain"
+	ant.copy(todir: "$testprojectRoot/grails-app/views") {
+		fileset dir: "$projectfiles.path/gsp"
+	}
 
-	ant.copy file: "$projectfiles.path/Message.groovy", todir: "$testprojectRoot/src/groovy"
+	ant.copy(todir: "$testprojectRoot/src/groovy") {
+		fileset file: "$projectfiles.path/Message.groovy"
+	}
 }
 
 private void copyTests() {
 	ant.copy(todir: "$testprojectRoot/test/functional") {
 		fileset(dir: "$basedir/webtest/tests")
 	}
+}
+
+private void generateFiles() {
+	callGrails(grailsHome, testprojectRoot, 'dev', 'generate-all') {
+		ant.arg value: 'Book'
+	}
+
+	ant.delete file: "$testprojectRoot/test/unit/BookControllerTests.groovy"
+
+	File bookController = new File(testprojectRoot, 'grails-app/controllers/BookController.groovy')
+	String contents = bookController.text
+
+	contents = contents.replace('class BookController {', '''\
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
+
+class BookController extends AbstractCacheController {''')
+
+	contents = contents.replace('def list()', '@Cacheable("book") def list()')
+	contents = contents.replace('def show()', '@Cacheable("book") def show()')
+	contents = contents.replace('def save()', '@CacheEvict(value="book", allEntries=true) def save()')
+	contents = contents.replace('def update()', '@CacheEvict(value="book", allEntries=true) def update()')
+	contents = contents.replace('def delete()', '@CacheEvict(value="book", allEntries=true) def delete()')
+
+	bookController.withWriter { it.writeLine contents }
 }
 
 private void deleteDir(String path) {
@@ -154,6 +203,9 @@ private void error(String message) {
 }
 
 private void callGrails(String grailsHome, String dir, String env, String action, extraArgs = null) {
+
+	println "running: grails $env $action in dir $dir"
+
 	ant.exec(executable: "$grailsHome/bin/grails", dir: dir, failonerror: 'true') {
 		ant.env key: 'GRAILS_HOME', value: grailsHome
 		ant.arg value: env
