@@ -94,8 +94,7 @@ class CacheEhcacheGrailsPlugin {
 		grailsCacheFilter(EhcachePageFragmentCachingFilter) {
 			cacheManager = ref('grailsCacheManager')
 			nativeCacheManager = ref('ehcacheCacheManager')
-			// TODO this name might be brittle - perhaps do by type?
-			cacheOperationSource = ref('org.springframework.cache.annotation.AnnotationCacheOperationSource#0')
+			cacheOperationSource = ref('cacheOperationSource')
 			keyGenerator = ref('webCacheKeyGenerator')
 			expressionEvaluator = ref('webExpressionEvaluator')
 		}
