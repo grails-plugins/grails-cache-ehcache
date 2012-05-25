@@ -1,3 +1,5 @@
+import org.springframework.cache.Cache
+
 import grails.converters.JSON
 
 abstract class AbstractCacheController {
@@ -24,7 +26,8 @@ abstract class AbstractCacheController {
 	}
 
 	def clearCache(String cacheName) {
-		grailsCacheManager.getCache(cacheName).evict()
+		Cache cache = grailsCacheManager.getCache(cacheName)
+		cache.clear()
 		render "cleared cache '$cacheName'"
 	}
 }
