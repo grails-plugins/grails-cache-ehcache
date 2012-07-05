@@ -21,13 +21,12 @@ import grails.plugin.cache.web.filter.ehcache.EhcachePageFragmentCachingFilter
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.core.io.ByteArrayResource
 
 class CacheEhcacheGrailsPlugin {
 
 	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.CacheEhcacheGrailsPlugin')
 
-	String version = '1.0.0.M2'
+	String version = '1.0.0'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
 	def pluginExcludes = [
@@ -95,8 +94,7 @@ class CacheEhcacheGrailsPlugin {
 		grailsCacheFilter(EhcachePageFragmentCachingFilter) {
 			cacheManager = ref('grailsCacheManager')
 			nativeCacheManager = ref('ehcacheCacheManager')
-			// TODO this name might be brittle - perhaps do by type?
-			cacheOperationSource = ref('org.springframework.cache.annotation.AnnotationCacheOperationSource#0')
+			cacheOperationSource = ref('cacheOperationSource')
 			keyGenerator = ref('webCacheKeyGenerator')
 			expressionEvaluator = ref('webExpressionEvaluator')
 		}

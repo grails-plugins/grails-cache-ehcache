@@ -14,6 +14,9 @@
  */
 package grails.plugin.cache.ehcache;
 
+import java.util.Collection;
+
+import grails.plugin.cache.GrailsCache;
 import grails.plugin.cache.GrailsValueWrapper;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -26,7 +29,7 @@ import org.springframework.cache.ehcache.EhCacheCache;
  *
  * @author Burt Beckwith
  */
-public class GrailsEhcacheCache extends EhCacheCache {
+public class GrailsEhcacheCache extends EhCacheCache implements GrailsCache {
 
 	public GrailsEhcacheCache(Ehcache ehcache) {
 		super(ehcache);
@@ -36,5 +39,10 @@ public class GrailsEhcacheCache extends EhCacheCache {
 	public GrailsValueWrapper get(Object key) {
 		Element element = getNativeCache().get(key);
 		return element == null ? null : new GrailsValueWrapper(element.getObjectValue(), element);
+	}
+
+	@SuppressWarnings("unchecked")
+	public Collection<Object> getAllKeys() {
+		return getNativeCache().getKeys();
 	}
 }
