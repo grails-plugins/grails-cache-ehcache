@@ -25,4 +25,7 @@ class CachingService {
 	String getData(String key, String value) {
 		"** ${value} **"
 	}
+
+	@CacheEvict(value='basic', allEntries=true)
+	void clear() {}
 }

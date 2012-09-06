@@ -1,5 +1,7 @@
 import grails.plugin.cache.web.PageInfo
 
+import org.springframework.cache.Cache
+
 class CacheAdminController {
 
 	def grailsCacheManager
@@ -31,5 +33,11 @@ class CacheAdminController {
 		}
 
 		[cache: cache, data: data]
+	}
+
+	def clearCache(String cacheName) {
+		Cache cache = grailsCacheManager.getCache(cacheName)
+		cache.clear()
+		render "cleared cache '$cacheName'"
 	}
 }
