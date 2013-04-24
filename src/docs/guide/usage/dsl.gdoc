@@ -5,12 +5,14 @@ h4. Caches
 Like in the core plugin, you configure a cache with the @cache@ call, and set configuration options in a closure, for example
 
 {code}
-cache {
-   name 'mycache'
-   eternal false
-   overflowToDisk true
-   maxElementsInMemory 10000
-   maxElementsOnDisk 10000000
+grails.cache.config = {
+   cache {
+      name 'mycache'
+      eternal false
+      overflowToDisk true
+      maxElementsInMemory 10000
+      maxElementsOnDisk 10000000
+   }
 }
 {code}
 
@@ -21,29 +23,41 @@ h4. Default cache and cache defaults
 Ehcache supports auto-creation of caches and this is enabled in this implementation, so if you call the @getCache(String name)@ method on the @CacheManager@ (via the @grailsCacheManager@ bean) and the cache didn't already exist it would be created and returned. Since it didn't already exist there is no configuration for it, so it uses the settings for the "default cache", for example:
 
 {code}
-defaultCache {
-   maxElementsInMemory 10000
-   eternal false
-   timeToIdleSeconds 120
-   timeToLiveSeconds 120
-   overflowToDisk true
-   maxElementsOnDisk 10000000
-   diskPersistent false
-   diskExpiryThreadIntervalSeconds 120
-   memoryStoreEvictionPolicy 'LRU'
+grails.cache.config = {
+   cache {
+      ...
+   }
+
+   defaultCache {
+      maxElementsInMemory 10000
+      eternal false
+      timeToIdleSeconds 120
+      timeToLiveSeconds 120
+      overflowToDisk true
+      maxElementsOnDisk 10000000
+      diskPersistent false
+      diskExpiryThreadIntervalSeconds 120
+      memoryStoreEvictionPolicy 'LRU'
+   }
 }
 {code}
 
 It is important to specify the @defaultCache@ configuration since Ehcache will throw an exception if you attempt to auto-create a cache and there are is no default configuration. You may want this behavior though, since if you are confident that you have specified all known caches then auto-creating a new cache is probably due to a typo or programming error.
 
-Don't confuse @defaultCache@ with @defaults@, which helps keep your configuration DRY and isn't a feature of Ehcache. This feature lets you specify default values that all caches must have, for example
+Don't confuse @defaultCache@ with @defaults@. The latter helps keep your configuration DRY and isn't a feature of Ehcache. This feature lets you specify default values that all caches must have, for example
 
 {code}
-defaults {
-   maxElementsInMemory 1000
-   eternal false
-   overflowToDisk false
-   maxElementsOnDisk 0
+grails.cache.config = {
+   cache {
+      ...
+   }
+
+   defaults {
+      maxElementsInMemory 1000
+      eternal false
+      overflowToDisk false
+      maxElementsOnDisk 0
+   }
 }
 {code}
 
@@ -56,14 +70,20 @@ h4. The "provider" block
 All cache DSLs support a @provider@ block, it isn't applicable for all DSLs. This is a way to specify provider-specific values, for example
 
 {code}
-provider {
-   updateCheck false
-   monitoring 'on'
-   dynamicConfig false
-   defaultTransactionTimeoutInSeconds 30
-   maxBytesLocalHeap 10
-   maxBytesLocalOffHeap 20
-   maxBytesLocalDisk 30
+grails.cache.config = {
+   cache {
+       ...
+   }
+
+   provider {
+      updateCheck false
+      monitoring 'on'
+      dynamicConfig false
+      defaultTransactionTimeoutInSeconds 30
+      maxBytesLocalHeap 10
+      maxBytesLocalOffHeap 20
+      maxBytesLocalDisk 30
+   }
 }
 {code}
 
@@ -107,12 +127,14 @@ h4. Hibernate domain class second-level caches
 Typically you configure a cache with the @cache@ call, but "domain" is an alias for "cache" and can be used when configuring caches for domain classes to make it clear what the cache is used for. Hibernate expects that the cache name is the full class name including the package; you can specify the full class and package as the "name" attribute:
 
 {code}
-domain {
-   name 'com.yourcompany.yourapp.Person'
-   eternal false
-   overflowToDisk true
-   maxElementsInMemory 10000
-   maxElementsOnDisk 10000000
+grails.cache.config = {
+   domain {
+      name 'com.yourcompany.yourapp.Person'
+      eternal false
+      overflowToDisk true
+      maxElementsInMemory 10000
+      maxElementsOnDisk 10000000
+   }
 }
 {code}
 
@@ -122,52 +144,58 @@ but you also use the class name to get a compile-time verification that the clas
 import com.yourcompany.yourapp.Person
 
 ...
-
-domain {
-   name Person
-   eternal false
-   overflowToDisk true
-   maxElementsInMemory 10000
-   maxElementsOnDisk 10000000
+grails.cache.config = {
+   domain {
+      name Person
+      eternal false
+      overflowToDisk true
+      maxElementsInMemory 10000
+      maxElementsOnDisk 10000000
+   }
 }
 {code}
 
 When you have configured caching for a mapped collection (for example the @books@ collection in an @Author@ class) Hibernate expects the cache name to be the containing class full name plus the collection field name. Use the @domainCollection@ call with an inner @domain@ attribute to tell the DSL what the name of the owning class is, e.g.
 
 {code}
-domain {
-   name 'com.foo.Author'
-   eternal false
-   overflowToDisk true
-   maxElementsInMemory 10000
-   maxElementsOnDisk 10000000
-}
-domainCollection {
-   name 'books'
-   domain 'com.foo.Author'
-   eternal true
-   overflowToDisk true
-   maxElementsInMemory 100
-   maxElementsOnDisk 10000
+grails.cache.config = {
+   domain {
+      name 'com.foo.Author'
+      eternal false
+      overflowToDisk true
+      maxElementsInMemory 10000
+      maxElementsOnDisk 10000000
+   }
+
+   domainCollection {
+      name 'books'
+      domain 'com.foo.Author'
+      eternal true
+      overflowToDisk true
+      maxElementsInMemory 100
+      maxElementsOnDisk 10000
+   }
 }
 {code}
 
 Or you can use the more compact inner closure syntax and omit the @domain@ attribute:
 
 {code}
-domain {
-   name 'com.foo.Author'
-   eternal false
-   overflowToDisk true
-   maxElementsInMemory 10000
-   maxElementsOnDisk 10000000
-
-   collection {
-      name 'books'
-      eternal true
+grails.cache.config = {
+   domain {
+      name 'com.foo.Author'
+      eternal false
       overflowToDisk true
-      maxElementsInMemory 100
-      maxElementsOnDisk 10000
+      maxElementsInMemory 10000
+      maxElementsOnDisk 10000000
+
+      collection {
+         name 'books'
+         eternal true
+         overflowToDisk true
+         maxElementsInMemory 100
+         maxElementsOnDisk 10000
+      }
    }
 }
 {code}
@@ -177,32 +205,44 @@ h4. diskStore
 If any cache supports overflowing to disk, you need to configure where to store this data with the @diskStore@ call. You can specify an absolute path (but this is likely to be a brittle and non-portable approach):
 
 {code}
-diskStore {
-   path '/tmp/ehcache'
+grails.cache.config = {
+   ...
+   diskStore {
+      path '/tmp/ehcache'
+   }
 }
 {code}
 
 You can also call @temp true@ to use the value of the @java.io.tmpdir@ system property:
 
 {code}
-diskStore {
-   temp true
+grails.cache.config = {
+   ...
+   diskStore {
+      temp true
+   }
 }
 {code}
 
 or @home true@ to use the value of the @user.home@ system property:
 
 {code}
-diskStore {
-   home true
+grails.cache.config = {
+   ...
+   diskStore {
+      home true
+   }
 }
 {code}
 
 or @current true@ to use the value of the @user.dir@ system property:
 
 {code}
-diskStore {
-   current true
+grails.cache.config = {
+   ...
+   diskStore {
+      current true
+   }
 }
 {code}
 
@@ -275,18 +315,22 @@ h4. Environments
 A @cache@ (or @domain@) element can specify one or more environment names to define when the cache is valid; when the DSL is evaluated the XML will only contain caches that are valid for the active environment. You can specify a single string:
 
 {code}
-domain {
-   name 'com.foo.Other'
-   env 'staging'
+grails.cache.config = {
+   domain {
+      name 'com.foo.Other'
+      env 'staging'
+   }
 }
 {code}
 
 or a list of strings
 
 {code}
-domain {
-   name 'com.foo.Book'
-   env(['staging', 'production'])
+grails.cache.config = {
+   domain {
+      name 'com.foo.Book'
+      env(['staging', 'production'])
+   }
 }
 {code}
 
@@ -337,35 +381,37 @@ and symbols to use for @bootstrapCacheLoaderFactory@ element @className@ attribu
 Note also that environment support (which is valid in any @cache@ (or @domain@) element and any distributed element) is especially important for distributed configuration. Most users will run non-distributed in development and possibly test environments, and only enable it in production or production-like environments. By adding one or more environment values to these elements you can have a single DSL that works in any environment. For example, this Groovy code
 
 {code}
-defaults {
-   maxElementsInMemory 1000
-   eternal false
-   overflowToDisk false
-   maxElementsOnDisk 0
-   cacheEventListenerFactoryName 'cacheEventListenerFactory'
-}
+grails.cache.config = {
+   defaults {
+      maxElementsInMemory 1000
+      eternal false
+      overflowToDisk false
+      maxElementsOnDisk 0
+      cacheEventListenerFactoryName 'cacheEventListenerFactory'
+   }
 
-domain {
-   name 'com.foo.Book'
-}
+   domain {
+      name 'com.foo.Book'
+   }
 
-cacheManagerPeerProviderFactory {
-   env 'production'
-   factoryType 'rmi'
-   multicastGroupAddress '${ehcacheMulticastGroupAddress}'
-   multicastGroupPort '${ehcacheMulticastGroupPort}'
-   timeToLive 'subnet'
-}
+   cacheManagerPeerProviderFactory {
+      env 'production'
+      factoryType 'rmi'
+      multicastGroupAddress '${ehcacheMulticastGroupAddress}'
+      multicastGroupPort '${ehcacheMulticastGroupPort}'
+      timeToLive 'subnet'
+   }
 
-cacheManagerPeerListenerFactory {
-   env 'production'
-}
+   cacheManagerPeerListenerFactory {
+      env 'production'
+   }
 
-cacheEventListenerFactory {
-   env 'production'
-   name 'cacheEventListenerFactory'
-   factoryType 'rmi'
-   replicateAsynchronously false
+   cacheEventListenerFactory {
+      env 'production'
+      name 'cacheEventListenerFactory'
+      factoryType 'rmi'
+      replicateAsynchronously false
+   }
 }
 {code}
 
