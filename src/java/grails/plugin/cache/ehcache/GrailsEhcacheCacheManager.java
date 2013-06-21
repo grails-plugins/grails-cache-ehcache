@@ -22,7 +22,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Status;
@@ -40,6 +44,7 @@ import org.springframework.util.Assert;
  * @author Costin Leau
  * @author Juergen Hoeller
  * @author Burt Beckwith
+ * @author Andrew Walters
  */
 public class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean {
 
@@ -49,23 +54,37 @@ public class GrailsEhcacheCacheManager implements GrailsCacheManager, Initializi
 	protected final ConcurrentMap<String, Cache> cacheMap = new ConcurrentHashMap<String, Cache>();
 	protected Set<String> cacheNames = new LinkedHashSet<String>();
 
+    private final Lock lock = new ReentrantLock();
+
 	public Cache getCache(String name) {
-
-		Cache cache = cacheMap.get(name);
-		if (cache == null) {
-			// check the EhCache cache again (in case the cache was added at runtime)
-			Ehcache ehcache = cacheManager.getEhcache(name);
-			if (ehcache == null) {
-				// create a new one based on defaults
-				cacheManager.addCache(name);
-				ehcache = cacheManager.getEhcache(name);
-			}
-
-			cache = new GrailsEhcacheCache(ehcache);
-			addCache(cache);
+        Cache cache = cacheMap.get(name);
+        if (cache == null) {
+            try {
+                // Ensure we don't have parallel access to cache creation which can lead to 'cache already exists' exceptions
+                if (lock.tryLock(200, TimeUnit.MILLISECONDS)) {
+                    try {
+                        // check the EhCache cache again (in case the cache was added at runtime)
+                        Ehcache ehcache = cacheManager.getEhcache(name);
+                        if (ehcache == null) {
+                            // create a new one based on defaults
+                            cacheManager.addCache(name);
+                            ehcache = cacheManager.getEhcache(name);
+                            cache = new GrailsEhcacheCache(ehcache);
+                            addCache(cache);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }
+                } else {
+                    throw new CacheException("Failed to get lock for " + name + " cache creation");
+                }
+            } catch(InterruptedException e) {
+                throw new CacheException("Failed to get lock for " + name + " cache creation");
+            }
 		}
-		return cache;
-	}
+
+        return cache;
+    }
 
 	public boolean cacheExists(String name) {
 		return getCacheNames().contains(name);
