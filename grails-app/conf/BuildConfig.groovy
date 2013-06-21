@@ -13,6 +13,8 @@ grails.project.dependency.resolution = {
 
 	dependencies {
 		compile 'net.sf.ehcache:ehcache-core:2.4.6'
+
+        test 'org.codehaus.gpars:gpars:1.0.0'
 	}
 
 	plugins {
