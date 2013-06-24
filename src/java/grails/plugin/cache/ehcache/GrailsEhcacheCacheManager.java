@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * @author Costin Leau
  * @author Juergen Hoeller
  * @author Burt Beckwith
+ * @author David Kuhn
  */
 public class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean {
 
@@ -50,17 +51,18 @@ public class GrailsEhcacheCacheManager implements GrailsCacheManager, Initializi
 	protected Set<String> cacheNames = new LinkedHashSet<String>();
 
 	public Cache getCache(String name) {
-
+		Ehcache ehcache = null;
 		Cache cache = cacheMap.get(name);
 		if (cache == null) {
 			// check the EhCache cache again (in case the cache was added at runtime)
-			Ehcache ehcache = cacheManager.getEhcache(name);
-			if (ehcache == null) {
-				// create a new one based on defaults
-				cacheManager.addCache(name);
+			synchronized(cacheMap) {
 				ehcache = cacheManager.getEhcache(name);
+				if (ehcache == null) {
+					// create a new one based on defaults
+					cacheManager.addCache(name);
+					ehcache = cacheManager.getEhcache(name);
+				}
 			}
-
 			cache = new GrailsEhcacheCache(ehcache);
 			addCache(cache);
 		}
