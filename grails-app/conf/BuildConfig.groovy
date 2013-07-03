@@ -23,6 +23,9 @@ grails.project.dependency.resolution = {
 		test 'org.codehaus.gpars:gpars:1.0.0', {
 			export = false
 		}
+		test 'org.codehaus.jsr166-mirror:jsr166y:1.7.0', {
+			export = false
+		}
 	}
 
 	plugins {
