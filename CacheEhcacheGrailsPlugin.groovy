@@ -40,7 +40,7 @@ class CacheEhcacheGrailsPlugin {
 	String author = 'Burt Beckwith'
 	String authorEmail = 'beckwithb@vmware.com'
 	String description = 'An Ehcache-based implementation of the Cache plugin'
-	String documentation = 'http://grails.org/plugin/cache-ehcache'
+	String documentation = 'http://grails-plugins.github.io/grails-cache-ehcache/'
 
 	String license = 'APACHE'
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
