@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import grails.plugin.cache.ehcache.EhcacheConfigBuilder
 import grails.plugin.cache.ehcache.EhcacheConfigLoader
 import grails.plugin.cache.ehcache.GrailsEhCacheManagerFactoryBean
 import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
@@ -122,8 +121,8 @@ class CacheEhcacheGrailsPlugin {
 		}
 	}
 
-    private boolean isEnabled(GrailsApplication application) {
-        def enabled = application.config.grails.cache.enabled
-        enabled == null || enabled != false
-    }
+	private boolean isEnabled(GrailsApplication application) {
+		def enabled = application.config.grails.cache.enabled
+		enabled == null || enabled != false
+	}
 }
