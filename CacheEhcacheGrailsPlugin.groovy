@@ -100,8 +100,8 @@ class CacheEhcacheGrailsPlugin {
 		}
 	}
 
-	private boolean isEnabled(GrailsApplication application) {
-		// TODO
-		true
-	}
+    private boolean isEnabled(GrailsApplication application) {
+        def enabled = application.config.grails.cache.enabled
+        enabled == null || enabled != false
+    }
 }
