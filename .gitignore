@@ -4,3 +4,4 @@ target
 *.zip
 plugin.xml
 /docs/
+.DS_Store
