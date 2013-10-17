@@ -100,6 +100,18 @@ class CacheEhcacheGrailsPlugin {
 		}
 	}
 
+	def doWithWebDescriptor = { webXml ->
+		def filterMapping = webXml.'filter-mapping'
+		
+		// If you are using persistent disk stores, or distributed caching, care should be taken to shutdown Ehcache.
+		// http://ehcache.org/documentation/operations/shutdown
+		filterMapping[filterMapping.size() - 1] + {
+			'listener'{
+				'listener-class'('net.sf.ehcache.constructs.web.ShutdownListener')
+			}
+		}
+	}
+
     private boolean isEnabled(GrailsApplication application) {
         def enabled = application.config.grails.cache.enabled
         enabled == null || enabled != false
