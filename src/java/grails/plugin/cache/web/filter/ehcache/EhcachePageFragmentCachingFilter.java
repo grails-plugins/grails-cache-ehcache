@@ -58,9 +58,12 @@ public class EhcachePageFragmentCachingFilter extends PageFragmentCachingFilter 
 	@Override
 	protected void put(Cache cache, String key, PageInfo pageInfo, Integer timeToLiveSeconds) {
 		Element element = new Element(key, pageInfo);
-		if (timeToLiveSeconds != null) {
-			element.setTimeToLive(timeToLiveSeconds);
-		}
+
+        // always use the TTL of the cache
+        element.setTimeToLive((int) ((EhCacheCache)cache).getNativeCache().getCacheConfiguration().getTimeToLiveSeconds());
+
+        log.debug("Put element into cache [" + cache.getName() + "] with ttl [" + element.getTimeToLive() + "]");
+
 		((EhCacheCache)cache).getNativeCache().put(element);
 	}
 }
