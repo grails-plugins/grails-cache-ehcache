@@ -98,6 +98,16 @@ class CacheEhcacheGrailsPlugin {
 			keyGenerator = ref('webCacheKeyGenerator')
 			expressionEvaluator = ref('webExpressionEvaluator')
 		}
+
+		mbeanServer(org.springframework.jmx.support.MBeanServerFactoryBean) {
+			locateExistingServerIfPossible=true
+		}
+
+		ehCacheManagementService(net.sf.ehcache.management.ManagementService) { bean ->
+			bean.initMethod="init"
+			bean.destroyMethod="dispose"
+			bean.constructorArgs=[ehcacheCacheManager, mbeanServer, true, true, true, true, true]
+		}
 	}
 
     private boolean isEnabled(GrailsApplication application) {
