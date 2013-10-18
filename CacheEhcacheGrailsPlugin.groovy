@@ -92,7 +92,7 @@ class CacheEhcacheGrailsPlugin {
 		}
 
 		grailsCacheConfigLoader(EhcacheConfigLoader) {
-			reloadable = reloadable
+			rebuildable = reloadable
 		}
 
 		grailsCacheManager(GrailsEhcacheCacheManager) {

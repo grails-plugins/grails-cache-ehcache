@@ -29,15 +29,15 @@ import org.slf4j.LoggerFactory
 class EhcacheConfigLoader extends ConfigLoader {
 	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.ehcache.EhcacheConfigLoader')
 
-	boolean reloadable
+	protected boolean rebuildable
 
-	public void setReloadable(boolean reloadable){
-		this.reloadable = reloadable
+	public void setRebuildable(boolean rebuildable){
+		this.rebuildable = rebuildable
 	}
 
 	void reload(List<ConfigObject> configs, ApplicationContext ctx) {
 
-		if(!reloadable){
+		if(!rebuildable){
 			log.info("Reload attempted, but reloading has been disabled by configuration. Ignoring the reload attempt.");
 			return;
 		}
