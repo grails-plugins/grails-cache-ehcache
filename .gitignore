@@ -1,4 +1,14 @@
-.settings
+# Eclipse
+.classpath
+.project
+.settings/
+target-eclipse/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
 target
 *.log
 *.zip
