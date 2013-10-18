@@ -68,10 +68,10 @@ public class GrailsEhcacheCacheManager implements GrailsCacheManager, Initializi
                         if (ehcache == null) {
                             // create a new one based on defaults
                             cacheManager.addCache(name);
-                            ehcache = cacheManager.getEhcache(name);
-                            cache = new GrailsEhcacheCache(ehcache);
-                            addCache(cache);
                         }
+                        ehcache = cacheManager.getEhcache(name);
+                        cache = new GrailsEhcacheCache(ehcache);
+                        addCache(cache);
                     } finally {
                         lock.unlock();
                     }
