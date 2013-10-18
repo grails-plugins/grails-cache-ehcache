@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Status;
+import net.sf.ehcache.management.ManagementService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,9 +118,14 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 		}
 
 		public void rebuild(Resource location) throws IOException {
-
 	      for (String cacheName : getCacheNames()) {
 	      	removeCache(cacheName);
+	      }
+	      for(Object o : getCacheManagerEventListenerRegistry().getRegisteredListeners()){
+            if(o instanceof ManagementService){
+              // ManagementService must be disposed or a duplicate mbean will be registered, throwing an exception
+              ((ManagementService)o).dispose();
+            }
 	      }
 
 			status = Status.STATUS_UNINITIALISED;
