@@ -14,6 +14,8 @@
  */
 package grails.plugin.cache.ehcache
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.ByteArrayResource
 
@@ -25,7 +27,19 @@ import grails.plugin.cache.ehcache.GrailsEhCacheManagerFactoryBean.ReloadableCac
  */
 class EhcacheConfigLoader extends ConfigLoader {
 
+	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.ehcache.EhcacheConfigLoader')
+
+	protected boolean rebuildable
+
+	public void setRebuildable(boolean rebuildable){
+		this.rebuildable = rebuildable
+	}
+
 	void reload(List<ConfigObject> configs, ApplicationContext ctx) {
+		if(!rebuildable){
+			log.info("Reload attempted, but reloading has been disabled by configuration. Ignoring the reload attempt.")
+			return
+		}
 
 		EhcacheConfigBuilder builder = new EhcacheConfigBuilder()
 		for (ConfigObject co : configs) {

@@ -1,5 +1,26 @@
 The full Ehcache DSL will not be documented because except for some exceptions and extensions, the DSL is nearly identical to the XML format for the @ehcache.xml@ file, although of course the syntax is somewhat different. The @ehcache.xml@ syntax is described in [this well commented example|http://ehcache.org/ehcache.xml] and you can view the XML Schema [here|http://ehcache.org/ehcache.xsd]. The DSL uses types where appropriate, for example numeric and boolean values; this isn't possible in XML since all attributes must be strings.
 
+h4. General configuration
+
+The configuration options closures (entirely optional) could look like this example:
+
+{code}
+grails{
+   cache {
+      enabled = true
+      ehcache {
+         ehcacheXmlLocation = 'classpath:ehcache.xml' // conf/ehcache.xml
+         reloadable = false
+      }
+   }
+}
+{code}
+
+* @enabled@ determines if the plugin is enabled. If false, then all caching operations are no-ops (as if all cache retrievals are misses).
+* @ehcacheXmlLocation@ optionally specifies where @ehcache.xml@ can be found.
+* @reloadable@ determines if groovy and ehcache.xml specified configuration can be reloaded at one time (false means configuration is only read at startup).
+
+
 h4. Caches
 
 Like in the core plugin, you configure a cache with the @cache@ call, and set configuration options in a closure, for example
@@ -93,6 +114,18 @@ In the case of Ehcache, these settings end up in the top-level @<ehcache>@ tag, 
 <ehcache defaultTransactionTimeoutInSeconds="30" dynamicConfig="false"
          maxBytesLocalDisk="30" maxBytesLocalHeap="10"
          maxBytesLocalOffHeap="20" monitoring="on" updateCheck="false">
+{code}
+
+h4. Hibernate
+
+To have Hibernate use ehcache, modify DataSource.groovy:
+
+{code}
+hibernate {
+   cache.use_second_level_cache = true // set based on whether the second level cache is desired
+   cache.use_query_cache = true // set based on whether the query cache is desired
+   cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory'
+}
 {code}
 
 h4. Hibernate second-level cache
