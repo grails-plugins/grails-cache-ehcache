@@ -5,3 +5,4 @@ target
 plugin.xml
 /docs/
 .DS_Store
+web-app
