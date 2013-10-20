@@ -75,10 +75,10 @@ class ConfigLoaderTests extends GroovyTestCase {
 
 		Cache cache = grailsCacheManager.getCache(name)
 
-		assertTrue cache instanceof GrailsEhcacheCache
+		org.junit.Assert.assertThat(cache, org.hamcrest.CoreMatchers.instanceOf(GrailsEhcacheCache.class));
 
-		assertTrue cache.nativeCache instanceof net.sf.ehcache.Cache
-		CacheConfiguration configuration = cache.nativeCache.@configuration
+		org.junit.Assert.assertThat(cache.nativeCache, org.hamcrest.CoreMatchers.instanceOf(net.sf.ehcache.Ehcache.class));
+		CacheConfiguration configuration = cache.nativeCache.cacheConfiguration
 
 		assertTrue configuration.overflowToDisk
 		assertEquals 2, configuration.maxElementsInMemory

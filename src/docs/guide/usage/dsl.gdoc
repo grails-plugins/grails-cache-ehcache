@@ -18,7 +18,7 @@ grails{
 
 * @enabled@ determines if the plugin is enabled. If false, then all caching operations are no-ops (as if all cache retrievals are misses).
 * @ehcacheXmlLocation@ optionally specifies where @ehcache.xml@ can be found.
-* @reloadable@ determines if groovy and ehcache.xml specified configuration can be reloaded at one time (false means configuration is only read at startup). Note that to use this cache with Hibernate, reloading must be disabled.
+* @reloadable@ determines if groovy and ehcache.xml specified configuration can be reloaded at one time (false means configuration is only read at startup).s
 
 
 h4. Caches
@@ -127,10 +127,6 @@ hibernate {
    cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory'
 }
 {code}
-
-{warning}
-Reloading must be disabled if Hibernate caching is to be used.
-{warning}
 
 h4. Hibernate second-level cache
 

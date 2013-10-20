@@ -89,6 +89,7 @@ class CacheEhcacheGrailsPlugin {
 
 		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) {
 			configLocation = ehcacheConfigLocation
+			rebuildable = reloadable
 		}
 
 		grailsCacheConfigLoader(EhcacheConfigLoader) {
