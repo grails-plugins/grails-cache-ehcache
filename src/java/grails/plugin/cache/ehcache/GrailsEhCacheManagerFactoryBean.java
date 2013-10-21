@@ -34,11 +34,11 @@ import net.sf.ehcache.Statistics;
 import net.sf.ehcache.Status;
 import net.sf.ehcache.bootstrap.BootstrapCacheLoader;
 import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.event.CacheManagerEventListener;
 import net.sf.ehcache.event.RegisteredEventListeners;
 import net.sf.ehcache.exceptionhandler.CacheExceptionHandler;
 import net.sf.ehcache.extension.CacheExtension;
 import net.sf.ehcache.loader.CacheLoader;
-import net.sf.ehcache.management.ManagementService;
 import net.sf.ehcache.search.Attribute;
 import net.sf.ehcache.search.Query;
 import net.sf.ehcache.statistics.CacheUsageListener;
@@ -157,10 +157,8 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 	      	removeCache(cacheName);
 	      }
 	      for(Object o : getCacheManagerEventListenerRegistry().getRegisteredListeners()){
-            if(o instanceof ManagementService){
-              // ManagementService must be disposed or a duplicate mbean will be registered, throwing an exception
-              ((ManagementService)o).dispose();
-            }
+	          // Listeners must be disposed or there will be problems (ex, ManagementService will register a duplicate mbean, throwing an exception)
+	          ((CacheManagerEventListener)o).dispose();
 	      }
 
 			status = Status.STATUS_UNINITIALISED;
