@@ -32,7 +32,6 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.Statistics;
 import net.sf.ehcache.Status;
-import net.sf.ehcache.management.ManagementService;
 import net.sf.ehcache.bootstrap.BootstrapCacheLoader;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.event.RegisteredEventListeners;
@@ -49,7 +48,7 @@ import net.sf.ehcache.terracotta.TerracottaNotRunningException;
 import net.sf.ehcache.transaction.manager.TransactionManagerLookup;
 import net.sf.ehcache.writer.CacheWriter;
 import net.sf.ehcache.writer.CacheWriterManager;
-
+import net.sf.ehcache.event.CacheManagerEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -156,10 +155,8 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			}
 
 			for (Object o : getCacheManagerEventListenerRegistry().getRegisteredListeners()) {
-				if (o instanceof ManagementService) {
-					// ManagementService must be disposed or a duplicate mbean will be registered, throwing an exception
-					((ManagementService)o).dispose();
-				}
+				// Listeners must be disposed or there will be problems (ex, ManagementService will register a duplicate mbean, throwing an exception)
+				((CacheManagerEventListener)o).dispose();
 			}
 
 			status = Status.STATUS_UNINITIALISED;
