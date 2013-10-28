@@ -30,13 +30,14 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 
 		parse {}
 
-		assertAttribute 'false', 'updateCheck'
-		assertAttribute 'autodetect', 'monitoring'
-		assertAttribute 'true', 'dynamicConfig'
-		assertAttribute '15', 'defaultTransactionTimeoutInSeconds'
-		assertAttribute '0', 'maxBytesLocalHeap'
-		assertAttribute '0', 'maxBytesLocalOffHeap'
-		assertAttribute '0', 'maxBytesLocalDisk'
+		//none of these attributes should exist - unset attributes should be left alone and not set
+		//assertAttribute 'false', 'updateCheck'
+		//assertAttribute 'autodetect', 'monitoring'
+		//assertAttribute 'true', 'dynamicConfig'
+		//assertAttribute '15', 'defaultTransactionTimeoutInSeconds'
+		//assertAttribute '0', 'maxBytesLocalHeap'
+		//assertAttribute '0', 'maxBytesLocalOffHeap'
+		//assertAttribute '0', 'maxBytesLocalDisk'
 
 		builder = null
 
@@ -472,7 +473,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute 'mycache', 'name', cache
 		assertAttribute 'false', 'eternal', cache
 		assertAttribute 'true', 'overflowToDisk', cache
-		assertAttribute '10000', 'maxElementsInMemory', cache
+		assertAttribute '5M', 'maxBytesLocalHeap', cache
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 

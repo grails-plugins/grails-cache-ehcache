@@ -26,7 +26,7 @@ class CacheEhcacheGrailsPlugin {
 
 	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.CacheEhcacheGrailsPlugin')
 
-	String version = '1.0.0'
+	String version = '1.0.1-SNAPSHOT'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
 	def pluginExcludes = [
@@ -56,15 +56,21 @@ class CacheEhcacheGrailsPlugin {
 		def cacheConfig = application.config.grails.cache
 		def ehcacheConfig = cacheConfig.ehcache
 		def ehcacheConfigLocation
-		if (cacheConfig.config instanceof Closure || application.cacheConfigClasses) {
-			// leave the location null to indicate that the real configuration will
-			// happen in doWithApplicationContext (from the core plugin, using this
-			// plugin's grailsCacheConfigLoader)
+		boolean reloadable
+		if (ehcacheConfig.reloadable instanceof Boolean) {
+			reloadable = ehcacheConfig.reloadable
+		}else{
+			reloadable = true
 		}
-		else if (ehcacheConfig.ehcacheXmlLocation instanceof CharSequence) {
+		if (ehcacheConfig.ehcacheXmlLocation instanceof CharSequence) {
 			// use the specified location
 			ehcacheConfigLocation = ehcacheConfig.ehcacheXmlLocation
 			log.info "Using Ehcache configuration file $ehcacheConfigLocation"
+		}
+		else if (cacheConfig.config instanceof Closure || application.cacheConfigClasses) {
+			// leave the location null to indicate that the real configuration will
+			// happen in doWithApplicationContext (from the core plugin, using this
+			// plugin's grailsCacheConfigLoader)
 		}
 		else {
 			// no config and no specified location, so look for ehcache.xml in the classpath,
@@ -83,9 +89,12 @@ class CacheEhcacheGrailsPlugin {
 
 		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) {
 			configLocation = ehcacheConfigLocation
+			rebuildable = reloadable
 		}
 
-		grailsCacheConfigLoader(EhcacheConfigLoader)
+		grailsCacheConfigLoader(EhcacheConfigLoader) {
+			rebuildable = reloadable
+		}
 
 		grailsCacheManager(GrailsEhcacheCacheManager) {
 			cacheManager = ref('ehcacheCacheManager')
@@ -97,6 +106,28 @@ class CacheEhcacheGrailsPlugin {
 			cacheOperationSource = ref('cacheOperationSource')
 			keyGenerator = ref('webCacheKeyGenerator')
 			expressionEvaluator = ref('webExpressionEvaluator')
+		}
+
+		mbeanServer(org.springframework.jmx.support.MBeanServerFactoryBean) {
+			locateExistingServerIfPossible=true
+		}
+
+		ehCacheManagementService(net.sf.ehcache.management.ManagementService) { bean ->
+			bean.initMethod="init"
+			bean.destroyMethod="dispose"
+			bean.constructorArgs=[ehcacheCacheManager, mbeanServer, true, true, true, true, true]
+		}
+	}
+
+	def doWithWebDescriptor = { webXml ->
+		def filterMapping = webXml.'filter-mapping'
+		
+		// If you are using persistent disk stores, or distributed caching, care should be taken to shutdown Ehcache.
+		// http://ehcache.org/documentation/operations/shutdown
+		filterMapping[filterMapping.size() - 1] + {
+			'listener'{
+				'listener-class'('net.sf.ehcache.constructs.web.ShutdownListener')
+			}
 		}
 	}
 

@@ -12,7 +12,11 @@ grails.project.dependency.resolution = {
 	}
 
 	dependencies {
-		compile 'net.sf.ehcache:ehcache-core:2.4.6'
+		compile 'net.sf.ehcache:ehcache:2.7.4'
+		compile('org.hibernate:hibernate-ehcache:3.6.10.Final'){
+			// if the application that uses this plugin happens to not use Hibernate, don't pull in Hibernate
+			export = false
+		}
 
         test 'org.codehaus.gpars:gpars:1.0.0'
 	}
@@ -21,6 +25,6 @@ grails.project.dependency.resolution = {
 		build(':release:2.0.4', ':rest-client-builder:1.0.2') {
 			export = false
 		}
-		compile ':cache:1.0.0'
+		compile ':cache:1.1.1'
 	}
 }
