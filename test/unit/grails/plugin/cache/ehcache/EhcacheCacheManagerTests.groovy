@@ -5,6 +5,7 @@ import grails.test.mixin.TestFor
 import groovyx.gpars.GParsPool
 import net.sf.ehcache.CacheManager
 import org.junit.Before
+import org.junit.After
 
 /**
  * @author Andrew Walters
@@ -18,6 +19,11 @@ class EhcacheCacheManagerTests extends GrailsUnitTestCase {
         manager = new GrailsEhcacheCacheManager()
         manager.cacheManager = CacheManager.create()
     }
+
+	@After
+	void after() {
+		manager.cacheManager.shutdown()
+	}
 
     void "test cache creation serial access"() {
         (0..10).each {
