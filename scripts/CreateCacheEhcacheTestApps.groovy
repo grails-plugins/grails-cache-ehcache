@@ -60,7 +60,6 @@ grails.cache.config = {
 	defaults {
 		eternal false
 		overflowToDisk false
-		maxElementsInMemory 100
 		maxElementsOnDisk 0
 	}
 	cache {

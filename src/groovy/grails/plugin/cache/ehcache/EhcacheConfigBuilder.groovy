@@ -441,13 +441,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		StringBuilder xml = new StringBuilder()
 		xml.append '<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd"'
 
-		appendProperty xml, 'defaultTransactionTimeoutInSeconds', getValue(_provider, 'defaultTransactionTimeoutInSeconds', 15), ' '
-		appendProperty xml, 'dynamicConfig', getValue(_provider, 'dynamicConfig', true), ' '
-		appendProperty xml, 'maxBytesLocalDisk', getValue(_provider, 'maxBytesLocalDisk', 0), ' '
-		appendProperty xml, 'maxBytesLocalHeap', getValue(_provider, 'maxBytesLocalHeap', 0), ' '
-		appendProperty xml, 'maxBytesLocalOffHeap', getValue(_provider, 'maxBytesLocalOffHeap', 0), ' '
-		appendProperty xml, 'monitoring', getValue(_provider, 'monitoring', 'autodetect'), ' '
-		appendProperty xml, 'updateCheck', getValue(_provider, 'updateCheck', false), ' '
+		if(_provider['defaultTransactionTimeoutInSeconds']!=null) appendProperty xml, 'defaultTransactionTimeoutInSeconds', getValue(_provider, 'defaultTransactionTimeoutInSeconds', 15), ' '
+		if(_provider['dynamicConfig']!=null) appendProperty xml, 'dynamicConfig', getValue(_provider, 'dynamicConfig', true), ' '
+		if(_provider['maxBytesLocalDisk']!=null) appendProperty xml, 'maxBytesLocalDisk', getValue(_provider, 'maxBytesLocalDisk', 0), ' '
+		if(_provider['maxBytesLocalHeap']!=null) appendProperty xml, 'maxBytesLocalHeap', getValue(_provider, 'maxBytesLocalHeap', 0), ' '
+		if(_provider['maxBytesLocalOffHeap']!=null) appendProperty xml, 'maxBytesLocalOffHeap', getValue(_provider, 'maxBytesLocalOffHeap', 0), ' '
+		if(_provider['monitoring']!=null) appendProperty xml, 'monitoring', getValue(_provider, 'monitoring', 'autodetect'), ' '
+		if(_provider['updateCheck']!=null) appendProperty xml, 'updateCheck', getValue(_provider, 'updateCheck', false), ' '
 		if (_provider.name) {
 			appendProperty xml, 'name', _provider.name
 		}
