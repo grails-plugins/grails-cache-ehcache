@@ -30,19 +30,21 @@ import org.springframework.cache.ehcache.EhCacheCache;
  */
 public class EhcachePageFragmentCachingFilter extends PageFragmentCachingFilter {
 
+	protected static final long ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
+
 //	@Override
-//	protected void replaceCacheWithDecoratedCache(Cache cache, BlockingCache blocking) {
+//	protected void replaceCacheWithDecoratedCache(final Cache cache, final BlockingCache blocking) {
 //		getNativeCacheManager().replaceCacheWithDecoratedCache(
 //				(Ehcache)cache.getNativeCache(), (Ehcache)blocking.getNativeCache());
 //	}
 
 //	@Override
-//	protected BlockingCache createBlockingCache(Cache cache) {
+//	protected BlockingCache createBlockingCache(final Cache cache) {
 //		return new EhcacheBlockingCache((Ehcache)cache.getNativeCache());
 //	}
 
 	@Override
-	protected int getTimeToLive(ValueWrapper wrapper) {
+	protected int getTimeToLive(final ValueWrapper wrapper) {
 		if (wrapper instanceof GrailsValueWrapper) {
 			Element e = (Element)((GrailsValueWrapper)wrapper).getNativeWrapper();
 			return e.getTimeToLive();
@@ -56,11 +58,16 @@ public class EhcachePageFragmentCachingFilter extends PageFragmentCachingFilter 
 	}
 
 	@Override
-	protected void put(Cache cache, String key, PageInfo pageInfo, Integer timeToLiveSeconds) {
+	protected void put(final Cache cache, final String key, final PageInfo pageInfo, final Integer timeToLiveSeconds) {
 		Element element = new Element(key, pageInfo);
-		if (timeToLiveSeconds != null) {
+		if (timeToLiveSeconds == null || timeToLiveSeconds >= ONE_YEAR_IN_SECONDS) {
+			element.setTimeToLive((int) ((EhCacheCache)cache).getNativeCache().getCacheConfiguration().getTimeToLiveSeconds());
+		}
+		else {
 			element.setTimeToLive(timeToLiveSeconds);
 		}
 		((EhCacheCache)cache).getNativeCache().put(element);
+
+		log.debug("Put element into cache [{0}] with ttl [{1}]", new Object[] { cache.getName(), element.getTimeToLive() });
 	}
 }
