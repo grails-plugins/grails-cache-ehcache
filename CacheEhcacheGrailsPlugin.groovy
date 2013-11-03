@@ -26,7 +26,7 @@ class CacheEhcacheGrailsPlugin {
 
 	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.CacheEhcacheGrailsPlugin')
 
-	String version = '1.0.0'
+	String version = '1.0.1-SNAPSHOT'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
 	def pluginExcludes = [
@@ -97,6 +97,18 @@ class CacheEhcacheGrailsPlugin {
 			cacheOperationSource = ref('cacheOperationSource')
 			keyGenerator = ref('webCacheKeyGenerator')
 			expressionEvaluator = ref('webExpressionEvaluator')
+		}
+	}
+
+	def doWithWebDescriptor = { webXml ->
+		def filterMapping = webXml.'filter-mapping'
+		
+		// If you are using persistent disk stores, or distributed caching, care should be taken to shutdown Ehcache.
+		// http://ehcache.org/documentation/operations/shutdown
+		filterMapping[filterMapping.size() - 1] + {
+			'listener'{
+				'listener-class'('net.sf.ehcache.constructs.web.ShutdownListener')
+			}
 		}
 	}
 
