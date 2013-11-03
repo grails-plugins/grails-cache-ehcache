@@ -67,7 +67,7 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 		if (configLocation == null) {
 			// use dummy configuration for now, will be done for real via rebuild()
 			String dummyXml =
-					"<ehcache updateCheck='false'>" +
+					"<ehcache name='grails-cache-ehcache' updateCheck='false'>" +
 					"<defaultCache maxElementsInMemory='1' eternal='false' overflowToDisk='false' timeToLiveSeconds='1234' />" +
 					"</ehcache>";
 			inputStream = new ByteArrayInputStream(dummyXml.getBytes());
@@ -81,10 +81,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 		}
 		finally {
 			inputStream.close();
-		}
-
-		if (cacheManagerName != null) {
-			cacheManager.setName(cacheManagerName);
 		}
 	}
 
