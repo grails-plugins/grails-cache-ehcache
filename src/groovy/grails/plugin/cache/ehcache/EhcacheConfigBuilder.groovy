@@ -446,12 +446,15 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		StringBuilder xml = new StringBuilder()
 		xml.append '<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd"'
 
+		String maxBytesLocalHeap = getValue(provider, 'maxBytesLocalHeap', '0')
+		boolean maxBytesLocalHeapSet = maxBytesLocalHeap != '0'
+
 		appendProperty xml, 'defaultTransactionTimeoutInSeconds', getValue(provider, 'defaultTransactionTimeoutInSeconds', 15), ' '
 		appendProperty xml, 'dynamicConfig', getValue(provider, 'dynamicConfig', true), ' '
 		appendProperty xml, 'monitoring', getValue(provider, 'monitoring', 'autodetect'), ' '
 		appendProperty xml, 'updateCheck', getValue(provider, 'updateCheck', false), ' '
 		appendNonZeroProperty xml, 'maxBytesLocalDisk', getValue(provider, 'maxBytesLocalDisk', 0), ' '
-		appendNonZeroProperty xml, 'maxBytesLocalHeap', getValue(provider, 'maxBytesLocalHeap', '0'), ' '
+		appendNonZeroProperty xml, 'maxBytesLocalHeap', maxBytesLocalHeap, ' '
 		appendNonZeroProperty xml, 'maxBytesLocalOffHeap', getValue(provider, 'maxBytesLocalOffHeap', 0), ' '
 		appendNonZeroProperty xml, 'maxEntriesLocalHeap', getValue(provider, 'maxEntriesLocalHeap', 10000), ' '
 		appendProperty xml, 'name', provider.name ?: 'grails-cache-ehcache', ' '
@@ -468,7 +471,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 		appendCache xml, 'defaultCache', defaultCache, env, cacheEventListenerFactoriesXml,
 			bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
-			cacheLoaderFactoriesXml, cacheExtensionFactoriesXml
+			cacheLoaderFactoriesXml, cacheExtensionFactoriesXml, maxBytesLocalHeapSet
 
 		for (data in cacheManagerPeerProviderFactories) {
 			appendCacheManagerPeerProviderFactory xml, data, env
@@ -481,7 +484,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		for (data in caches) {
 			appendCache xml, 'cache', data, env, cacheEventListenerFactoriesXml,
 				bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
-				cacheLoaderFactoriesXml, cacheExtensionFactoriesXml
+				cacheLoaderFactoriesXml, cacheExtensionFactoriesXml, maxBytesLocalHeapSet
 		}
 
 		xml.append(LF).append('</ehcache>').append LF
@@ -492,7 +495,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected void appendCache(StringBuilder xml, String type, Map data, String env,
 			Map cacheEventListenerFactoriesXml, Map bootstrapCacheLoaderFactoriesXml,
 			Map cacheExceptionHandlerFactoriesXml, Map cacheLoaderFactoriesXml,
-			Map cacheExtensionFactoriesXml) {
+			Map cacheExtensionFactoriesXml, boolean maxBytesLocalHeapSet) {
 
 		if (data.domain) {
 			// collection
@@ -516,6 +519,10 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		List cacheExceptionHandlerFactoryNames = data.cacheExceptionHandlerFactoryName
 		List cacheLoaderFactoryNames = data.cacheLoaderFactoryName
 		List cacheExtensionFactoryNames = data.cacheExtensionFactoryName
+
+		if (!maxBytesLocalHeapSet && !data.maxBytesLocalHeap && !data.maxElementsInMemory) {
+			data.maxBytesLocalHeap = '10m'
+		}
 
 		data.each { key, value ->
 			if (key in CACHE_NONPROPERTY_NAMES) return
