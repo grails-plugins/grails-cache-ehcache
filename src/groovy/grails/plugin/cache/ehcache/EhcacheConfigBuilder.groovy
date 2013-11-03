@@ -19,7 +19,7 @@ import grails.util.Environment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-// note defaults doesn't apply to hibernateQuery/hibernateTimestamps
+// note 'defaults' doesn't apply to hibernateQuery/hibernateTimestamps
 
 /**
  * @author Burt Beckwith
@@ -38,17 +38,17 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		unrestricted: 255]
 
 	protected static final Map<String, String> CACHE_MANAGER_PEER_PROVIDERS =
-		[rmi: 'net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory',
+		[rmi:     'net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory',
 		 jgroups: 'net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory',
-		 jms: 'net.sf.ehcache.distribution.jms.JMSCacheManagerPeerProviderFactory']
+		 jms:     'net.sf.ehcache.distribution.jms.JMSCacheManagerPeerProviderFactory']
 
 	protected static final Map<String, String> CACHE_EVENT_LISTENER_FACTORIES =
-		[rmi: 'net.sf.ehcache.distribution.RMICacheReplicatorFactory',
+		[rmi:     'net.sf.ehcache.distribution.RMICacheReplicatorFactory',
 		 jgroups: 'net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory',
-		 jms: 'net.sf.ehcache.distribution.jms.JMSCacheReplicatorFactory']
+		 jms:     'net.sf.ehcache.distribution.jms.JMSCacheReplicatorFactory']
 
 	protected static final Map<String, String> BOOTSTRAP_CACHE_LOADER_FACTORIES =
-		[rmi: 'net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory',
+		[rmi:     'net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory',
 		 jgroups: 'net.sf.ehcache.distribution.jgroups.JGroupsBootstrapCacheLoaderFactory'] // no JMS
 
 	protected static final Map DEFAULT_DEFAULT_CACHE = [
@@ -62,30 +62,35 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		diskExpiryThreadIntervalSeconds: 120,
 		memoryStoreEvictionPolicy: 'LRU']
 
-	protected List<String> _stack = []
-	protected List<Map<String, Object>> _caches = []
-	protected Map<String, Object> _defaultCache
-	protected Map<String, Object> _defaults = [:]
-	protected Map<String, Object> _hibernateQuery = [
+	protected static final List<String> CACHE_NONPROPERTY_NAMES = [
+		'name', 'domain', 'cacheEventListenerFactoryName',
+		'bootstrapCacheLoaderFactoryName', 'cacheExceptionHandlerFactoryName',
+		'cacheLoaderFactoryName', 'cacheExtensionFactoryName']
+
+	protected List<String> stack = []
+	protected List<Map<String, Object>> caches = []
+	protected Map<String, Object> defaultCache
+	protected Map<String, Object> defaults = [:]
+	protected Map<String, Object> hibernateQuery = [
 		name: 'org.hibernate.cache.StandardQueryCache', maxElementsInMemory: 50,
 		timeToLiveSeconds: 120, eternal: false, overflowToDisk: true, maxElementsOnDisk: 0]
-	protected Map<String, Object> _hibernateTimestamps = [
+	protected Map<String, Object> hibernateTimestamps = [
 		name: 'org.hibernate.cache.UpdateTimestampsCache', maxElementsInMemory: 5000,
 		eternal: true, overflowToDisk: false, maxElementsOnDisk: 0]
-	protected Map<String, Object> _cacheManagerPeerListenerFactory // can be empty, so exists == not null
-	protected Map<String, Object> _cacheManagerEventListenerFactory = [:]
-	protected Map<String, Object> _bootstrapCacheLoaderFactory = [:]
-	protected Map<String, Object> _cacheExceptionHandlerFactory = [:]
-	protected Map<String, Object> _provider = [:]
-	protected List<Map<String, Object>> _cacheEventListenerFactories = []
-	protected List<Map<String, Object>> _cacheLoaderFactories = []
-	protected List<Map<String, Object>> _cacheExtensionFactories = []
-	protected List<Map<String, Object>> _cacheManagerPeerProviderFactories = []
-	protected Map<String, Object> _current
-	protected String _diskStore = TEMP_DIR
-	protected int _unrecognizedElementDepth = 0
+	protected Map<String, Object> cacheManagerPeerListenerFactory // can be empty, so exists == not null
+	protected Map<String, Object> cacheManagerEventListenerFactory = [:]
+	protected Map<String, Object> bootstrapCacheLoaderFactory = [:]
+	protected Map<String, Object> cacheExceptionHandlerFactory = [:]
+	protected Map<String, Object> provider = [:]
+	protected List<Map<String, Object>> cacheEventListenerFactories = []
+	protected List<Map<String, Object>> cacheLoaderFactories = []
+	protected List<Map<String, Object>> cacheExtensionFactories = []
+	protected List<Map<String, Object>> cacheManagerPeerProviderFactories = []
+	protected Map<String, Object> current
+	protected String diskStore = TEMP_DIR
+	protected int unrecognizedElementDepth = 0
 
-	protected final Logger _log = LoggerFactory.getLogger(getClass())
+	protected final Logger log = LoggerFactory.getLogger(getClass())
 
 	protected static final List DEFAULT_CACHE_PARAM_NAMES = [
 		'cacheLoaderTimeoutMillis', 'clearOnFlush', 'copyOnRead', 'copyOnWrite',
@@ -133,13 +138,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 	@Override
 	protected createNode(name) {
-		if (_unrecognizedElementDepth) {
-			_unrecognizedElementDepth++
-			_log.warn "ignoring node $name contained in unrecognized parent node"
+		if (unrecognizedElementDepth) {
+			unrecognizedElementDepth++
+			log.warn "ignoring node $name contained in unrecognized parent node"
 			return
 		}
 
-		_log.trace "createNode $name"
+		log.trace "createNode $name"
 
 		switch (name) {
 			case 'provider':
@@ -148,120 +153,120 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			case 'cacheManagerEventListenerFactory':
 			case 'bootstrapCacheLoaderFactory':
 			case 'cacheExceptionHandlerFactory':
-				_stack.push name
+				stack.push name
 				return name
 
 			case 'defaultCache':
-				if (_defaultCache == null) {
-					_defaultCache = [:]
+				if (defaultCache == null) {
+					defaultCache = [:]
 				}
-				_stack.push name
+				stack.push name
 				return name
 
 			case 'cacheManagerPeerListenerFactory':
-				if (_cacheManagerPeerListenerFactory == null) {
-					_cacheManagerPeerListenerFactory = [:]
+				if (cacheManagerPeerListenerFactory == null) {
+					cacheManagerPeerListenerFactory = [:]
 				}
-				_stack.push name
+				stack.push name
 				return name
 
 			case 'hibernateQuery':
-				_stack.push name
-				_caches << _hibernateQuery.clone()
+				stack.push name
+				caches << hibernateQuery.clone()
 				return name
 
 			case 'hibernateTimestamps':
-				_stack.push name
-				_caches << _hibernateTimestamps.clone()
+				stack.push name
+				caches << hibernateTimestamps.clone()
 				return name
 
 			case 'domainCollection':
 			case 'collection':
 			case 'cache':
 			case 'domain':
-				_current = [:]
-				_caches << _current
-				_stack.push name
+				current = [:]
+				caches << current
+				stack.push name
 				return name
 
 			case 'cacheManagerPeerProviderFactory':
-				_current = [:]
-				_cacheManagerPeerProviderFactories << _current
-				_stack.push name
+				current = [:]
+				cacheManagerPeerProviderFactories << current
+				stack.push name
 				return name
 
 			case 'cacheEventListenerFactory':
-				_current = [:]
-				_cacheEventListenerFactories << _current
-				_stack.push name
+				current = [:]
+				cacheEventListenerFactories << current
+				stack.push name
 				return name
 
 			case 'cacheLoaderFactory':
-				_current = [:]
-				_cacheLoaderFactories << _current
-				_stack.push name
+				current = [:]
+				cacheLoaderFactories << current
+				stack.push name
 				return name
 
 			case 'cacheExtensionFactory':
-				_current = [:]
-				_cacheExtensionFactories << _current
-				_stack.push name
+				current = [:]
+				cacheExtensionFactories << current
+				stack.push name
 				return name
 		}
 
-		_unrecognizedElementDepth++
-		_log.warn "Cannot create empty node with name '$name'"
+		unrecognizedElementDepth++
+		log.warn "Cannot create empty node with name '$name'"
 	}
 
 	@Override
 	protected createNode(name, value) {
-		if (_unrecognizedElementDepth) {
-			_unrecognizedElementDepth++
-			_log.warn "ignoring node $name with value $value contained in unrecognized parent node"
+		if (unrecognizedElementDepth) {
+			unrecognizedElementDepth++
+			log.warn "ignoring node $name with value $value contained in unrecognized parent node"
 			return
 		}
 
-		_log.trace "createNode $name, value: $value"
+		log.trace "createNode $name, value: $value"
 
-		String level = _stack[-1]
-		_stack.push name
+		String level = stack[-1]
+		stack.push name
 
 		switch (level) {
 			case 'diskStore':
 				switch (name) {
 					case 'path':
-						_diskStore = value.toString()
+						diskStore = value.toString()
 						return name
 
 					case 'temp':
-						_diskStore = TEMP_DIR
+						diskStore = TEMP_DIR
 						return name
 
 					case 'home':
-						_diskStore = 'user.home'
+						diskStore = 'user.home'
 						return name
 
 					case 'current':
-						_diskStore = 'user.dir'
+						diskStore = 'user.dir'
 						return name
 				}
 				break
 
 			case 'defaultCache':
 				if (name in DEFAULT_CACHE_PARAM_NAMES) {
-					_defaultCache[name] = value
+					defaultCache[name] = value
 					return name
 				}
 				break
 
 			case 'defaults':
 				if (name in FACTORY_REF_NAMES) {
-					addToList _defaults, name, value
+					addToList defaults, name, value
 					return name
 				}
 
 				if (name in CACHE_PARAM_NAMES) {
-					_defaults[name] = value
+					defaults[name] = value
 					return name
 				}
 
@@ -269,12 +274,12 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 			case 'hibernateQuery':
 				if (name in FACTORY_REF_NAMES) {
-					addToList _hibernateQuery, name, value
+					addToList hibernateQuery, name, value
 					return name
 				}
 
 				if (name in CACHE_PARAM_NAMES) {
-					_hibernateQuery[name] = value
+					hibernateQuery[name] = value
 					return name
 				}
 
@@ -282,12 +287,12 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 			case 'hibernateTimestamps':
 				if (name in FACTORY_REF_NAMES) {
-					addToList _hibernateTimestamps, name, value
+					addToList hibernateTimestamps, name, value
 					return name
 				}
 
 				if (name in CACHE_PARAM_NAMES) {
-					_hibernateTimestamps[name] = value
+					hibernateTimestamps[name] = value
 					return name
 				}
 				break
@@ -300,12 +305,12 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				}
 
 				if ('name' == name || 'cache' == name  || 'domain' == name || name in CACHE_PARAM_NAMES) {
-					_current[name] = value
+					current[name] = value
 					return name
 				}
 
 				if (name in FACTORY_REF_NAMES) {
-					addToList _current, name, value
+					addToList current, name, value
 					return name
 				}
 
@@ -317,11 +322,11 @@ class EhcacheConfigBuilder extends BuilderSupport {
 						value = value.name
 					}
 
-					_current.domain = _caches[-2].name
+					current.domain = caches[-2].name
 				}
 
 				if ('name' == name || name in CACHE_PARAM_NAMES) {
-					_current[name] = value
+					current[name] = value
 					return name
 				}
 
@@ -329,32 +334,32 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 			case 'cacheManagerPeerProviderFactory':
 				if ('rmiUrl' == name) {
-					addToList _current, 'rmiUrls', value
+					addToList current, 'rmiUrls', value
 					return name
 				}
 
 				// allow all properties for forward compatability
-				_current[name] = value
+				current[name] = value
 				return name
 
 			case 'cacheManagerPeerListenerFactory':
 				// allow all properties for forward compatability
-				_cacheManagerPeerListenerFactory[name] = value
+				cacheManagerPeerListenerFactory[name] = value
 				return name
 
 			case 'cacheManagerEventListenerFactory':
 				// allow all properties for forward compatability
-				_cacheManagerEventListenerFactory[name] = value
+				cacheManagerEventListenerFactory[name] = value
 				return name
 
 			case 'bootstrapCacheLoaderFactory':
 				// allow all properties for forward compatability
-				_bootstrapCacheLoaderFactory[name] = value
+				bootstrapCacheLoaderFactory[name] = value
 				return name
 
 			case 'provider':
 				if (name in PROVIDER_NAMES) {
-					_provider[name] = value
+					provider[name] = value
 					return name
 				}
 				break
@@ -363,51 +368,51 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			case 'cacheLoaderFactory':
 			case 'cacheExtensionFactory':
 				// allow all properties for forward compatability
-				_current[name] = value
+				current[name] = value
 				return name
 		}
 
-		_unrecognizedElementDepth++
-		_log.warn "Cannot create node with name '$name' and value '$value' for parent '$level'"
+		unrecognizedElementDepth++
+		log.warn "Cannot create node with name '$name' and value '$value' for parent '$level'"
 	}
 
 	@Override
 	protected createNode(name, Map attributes) {
-		if (_unrecognizedElementDepth) {
-			_unrecognizedElementDepth++
-			_log.warn "ignoring node $name with attributes $attributes contained in unrecognized parent node"
+		if (unrecognizedElementDepth) {
+			unrecognizedElementDepth++
+			log.warn "ignoring node $name with attributes $attributes contained in unrecognized parent node"
 			return
 		}
 
-		_log.trace "createNode $name + attributes: $attributes"
+		log.trace "createNode $name + attributes: $attributes"
 	}
 
 	@Override
 	protected createNode(name, Map attributes, value) {
-		if (_unrecognizedElementDepth) {
-			_unrecognizedElementDepth++
-			_log.warn "ignoring node $name with value $value and attributes $attributes contained in unrecognized parent node"
+		if (unrecognizedElementDepth) {
+			unrecognizedElementDepth++
+			log.warn "ignoring node $name with value $value and attributes $attributes contained in unrecognized parent node"
 			return
 		}
 
-		_log.trace "createNode $name + value: $value attributes: $attributes"
+		log.trace "createNode $name + value: $value attributes: $attributes"
 	}
 
 	@Override
 	protected void setParent(parent, child) {
-		_log.trace "setParent $parent, child: $child"
+		log.trace "setParent $parent, child: $child"
 		// do nothing
 	}
 
 	@Override
 	protected void nodeCompleted(parent, node) {
-		_log.trace "nodeCompleted $parent $node"
+		log.trace "nodeCompleted $parent $node"
 
-		if (_unrecognizedElementDepth) {
-			_unrecognizedElementDepth--
+		if (unrecognizedElementDepth) {
+			unrecognizedElementDepth--
 		}
 		else {
-			_stack.pop()
+			stack.pop()
 		}
 	}
 
@@ -415,58 +420,57 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 		String env = Environment.current.name
 
-		Map cacheEventListenerFactoriesXml = generateChildElementXmlMap(_cacheEventListenerFactories,
+		Map cacheEventListenerFactoriesXml = generateChildElementXmlMap(cacheEventListenerFactories,
 				env, 'cacheEventListenerFactory')
 
 		def factories = []
-		if (_bootstrapCacheLoaderFactory) {
-			factories << _bootstrapCacheLoaderFactory
+		if (bootstrapCacheLoaderFactory) {
+			factories << bootstrapCacheLoaderFactory
 		}
 		Map bootstrapCacheLoaderFactoriesXml = generateChildElementXmlMap(factories,
 				env, 'bootstrapCacheLoaderFactory')
 
 		factories = []
-		if (_cacheExceptionHandlerFactory) {
-			factories << _cacheExceptionHandlerFactory
+		if (cacheExceptionHandlerFactory) {
+			factories << cacheExceptionHandlerFactory
 		}
 		Map cacheExceptionHandlerFactoriesXml = generateChildElementXmlMap(factories,
 						env, 'cacheExceptionHandlerFactory')
 
-		Map cacheLoaderFactoriesXml = generateChildElementXmlMap(_cacheLoaderFactories,
+		Map cacheLoaderFactoriesXml = generateChildElementXmlMap(cacheLoaderFactories,
 				env, 'cacheLoaderFactory')
 
-		Map cacheExtensionFactoriesXml = generateChildElementXmlMap(_cacheExtensionFactories,
+		Map cacheExtensionFactoriesXml = generateChildElementXmlMap(cacheExtensionFactories,
 				env, 'cacheExtensionFactory')
 
 		StringBuilder xml = new StringBuilder()
 		xml.append '<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd"'
 
-		appendProperty xml, 'defaultTransactionTimeoutInSeconds', getValue(_provider, 'defaultTransactionTimeoutInSeconds', 15), ' '
-		appendProperty xml, 'dynamicConfig', getValue(_provider, 'dynamicConfig', true), ' '
-		appendProperty xml, 'maxBytesLocalDisk', getValue(_provider, 'maxBytesLocalDisk', 0), ' '
-		appendProperty xml, 'maxBytesLocalHeap', getValue(_provider, 'maxBytesLocalHeap', 0), ' '
-		appendProperty xml, 'maxBytesLocalOffHeap', getValue(_provider, 'maxBytesLocalOffHeap', 0), ' '
-		appendProperty xml, 'monitoring', getValue(_provider, 'monitoring', 'autodetect'), ' '
-		appendProperty xml, 'updateCheck', getValue(_provider, 'updateCheck', false), ' '
-		if (_provider.name) {
-			appendProperty xml, 'name', _provider.name
-		}
+		appendProperty xml, 'defaultTransactionTimeoutInSeconds', getValue(provider, 'defaultTransactionTimeoutInSeconds', 15), ' '
+		appendProperty xml, 'dynamicConfig', getValue(provider, 'dynamicConfig', true), ' '
+		appendProperty xml, 'monitoring', getValue(provider, 'monitoring', 'autodetect'), ' '
+		appendProperty xml, 'updateCheck', getValue(provider, 'updateCheck', false), ' '
+		appendNonZeroProperty xml, 'maxBytesLocalDisk', getValue(provider, 'maxBytesLocalDisk', 0), ' '
+		appendNonZeroProperty xml, 'maxBytesLocalHeap', getValue(provider, 'maxBytesLocalHeap', '0'), ' '
+		appendNonZeroProperty xml, 'maxBytesLocalOffHeap', getValue(provider, 'maxBytesLocalOffHeap', 0), ' '
+		appendNonZeroProperty xml, 'maxEntriesLocalHeap', getValue(provider, 'maxEntriesLocalHeap', 10000), ' '
+		appendProperty xml, 'name', provider.name ?: 'grails-cache-ehcache', ' '
 
 		xml.append('>').append LF
 
-		if (_diskStore) {
-			xml.append """$LF$INDENT<diskStore path="$_diskStore" />$LF"""
+		if (diskStore) {
+			xml.append """$LF$INDENT<diskStore path="$diskStore" />$LF"""
 		}
 
-		if (_defaultCache == null) {
-			_defaultCache = DEFAULT_DEFAULT_CACHE
+		if (defaultCache == null) {
+			defaultCache = DEFAULT_DEFAULT_CACHE
 		}
 
-		appendCache xml, 'defaultCache', _defaultCache, env, cacheEventListenerFactoriesXml,
+		appendCache xml, 'defaultCache', defaultCache, env, cacheEventListenerFactoriesXml,
 			bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
 			cacheLoaderFactoriesXml, cacheExtensionFactoriesXml
 
-		for (data in _cacheManagerPeerProviderFactories) {
+		for (data in cacheManagerPeerProviderFactories) {
 			appendCacheManagerPeerProviderFactory xml, data, env
 		}
 
@@ -474,7 +478,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 		appendCacheManagerEventListenerFactory xml, env
 
-		for (data in _caches) {
+		for (data in caches) {
 			appendCache xml, 'cache', data, env, cacheEventListenerFactoriesXml,
 				bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
 				cacheLoaderFactoriesXml, cacheExtensionFactoriesXml
@@ -496,7 +500,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		}
 
 		if (!isValidInEnv(data, env)) {
-			_log.debug "skipping cache $data.name since it's not valid in env '$env'"
+			log.debug "skipping cache $data.name since it's not valid in env '$env'"
 			return
 		}
 
@@ -514,9 +518,8 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		List cacheExtensionFactoryNames = data.cacheExtensionFactoryName
 
 		data.each { key, value ->
-			if (key in ['name', 'domain', 'cacheEventListenerFactoryName',
-			            'bootstrapCacheLoaderFactoryName', 'cacheExceptionHandlerFactoryName',
-							'cacheLoaderFactoryName', 'cacheExtensionFactoryName']) return
+			if (key in CACHE_NONPROPERTY_NAMES) return
+
 			xml.append LF
 			xml.append INDENT
 			appendProperty xml, key, value, '       ', true
@@ -545,7 +548,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected void appendCacheManagerPeerProviderFactory(StringBuilder xml, Map data, String env) {
 
 		if (!isValidInEnv(data, env)) {
-			_log.debug "skipping cacheManagerPeerProviderFactory $data.className since it's not valid in env '$env'"
+			log.debug "skipping cacheManagerPeerProviderFactory $data.className since it's not valid in env '$env'"
 			return
 		}
 
@@ -591,33 +594,33 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	}
 
 	protected void appendCacheManagerPeerListenerFactory(StringBuilder xml, String env) {
-		if (_cacheManagerPeerListenerFactory == null) {
+		if (cacheManagerPeerListenerFactory == null) {
 			return
 		}
 
-		if (!isValidInEnv(_cacheManagerPeerListenerFactory, env)) {
-			_log.debug "skipping cacheManagerPeerListenerFactory since it's not valid in env '$env'"
+		if (!isValidInEnv(cacheManagerPeerListenerFactory, env)) {
+			log.debug "skipping cacheManagerPeerListenerFactory since it's not valid in env '$env'"
 			return
 		}
 
-		String className = _cacheManagerPeerListenerFactory.className
-		String properties = joinProperties(_cacheManagerPeerListenerFactory, ',', ['className'])
+		String className = cacheManagerPeerListenerFactory.className
+		String properties = joinProperties(cacheManagerPeerListenerFactory, ',', ['className'])
 
 		appendSimpleNodeWithProperties xml, 'cacheManagerPeerListenerFactory', className, properties, ','
 	}
 
 	protected void appendCacheManagerEventListenerFactory(StringBuilder xml, String env) {
-		if (!_cacheManagerEventListenerFactory) {
+		if (!cacheManagerEventListenerFactory) {
 			return
 		}
 
-		if (!isValidInEnv(_cacheManagerEventListenerFactory, env)) {
-			_log.debug "skipping cacheManagerEventListenerFactory since it's not valid in env '$env'"
+		if (!isValidInEnv(cacheManagerEventListenerFactory, env)) {
+			log.debug "skipping cacheManagerEventListenerFactory since it's not valid in env '$env'"
 			return
 		}
 
-		String className = _cacheManagerEventListenerFactory.className
-		String properties = joinProperties(_cacheManagerEventListenerFactory, ',', ['className'])
+		String className = cacheManagerEventListenerFactory.className
+		String properties = joinProperties(cacheManagerEventListenerFactory, ',', ['className'])
 
 		appendSimpleNodeWithProperties xml, 'cacheManagerEventListenerFactory', className, properties, ','
 	}
@@ -646,6 +649,17 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		}
 
 		properties.toString()
+	}
+
+	protected void appendNonZeroProperty(StringBuilder sb, String name, value, String prefix, boolean quote = true) {
+		if ('0'.equals(value)) {
+			return
+		}
+
+		sb.append(prefix).append(name).append('=')
+		if (quote) sb.append('"')
+		sb.append value
+		if (quote) sb.append('"')
 	}
 
 	protected void appendProperty(StringBuilder sb, String name, value, String prefix, boolean quote = true) {
@@ -727,14 +741,14 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		resolveBootstrapCacheLoaderFactoryProperties()
 		resolveCacheEventListenerFactoryProperties()
 
-		mergeFactories _cacheLoaderFactories
-		mergeFactories _cacheExtensionFactories
+		mergeFactories cacheLoaderFactories
+		mergeFactories cacheExtensionFactories
 	}
 
 	protected void setDefaults() {
-		for (data in _caches) {
+		for (data in caches) {
 			Map<String, Object> withDefaults = [:]
-			withDefaults.putAll _defaults
+			withDefaults.putAll defaults
 			withDefaults.putAll data
 			data.clear()
 			data.putAll withDefaults
@@ -742,7 +756,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	}
 
 	protected void mergeCaches() {
-		mergeDefinitions _caches, 'name'
+		mergeDefinitions caches, 'name'
 	}
 
 	protected void mergeFactories(List<Map<String, Object>> factories) {
@@ -764,30 +778,30 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	}
 
 	protected void resolveCacheManagerPeerListenerFactoryProperties() {
-		if (_cacheManagerPeerListenerFactory && !_cacheManagerPeerListenerFactory.className) {
-			_cacheManagerPeerListenerFactory.className = 'net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory'
+		if (cacheManagerPeerListenerFactory && !cacheManagerPeerListenerFactory.className) {
+			cacheManagerPeerListenerFactory.className = 'net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory'
 		}
 	}
 
 	protected void resolveCacheManagerPeerProviderFactoryProperties() {
-		for (data in _cacheManagerPeerProviderFactories) {
+		for (data in cacheManagerPeerProviderFactories) {
 			String type = data.factoryType
 			if (type && !data.className) {
 				data.className = CACHE_MANAGER_PEER_PROVIDERS[type]
 			}
 		}
-		mergeFactories _cacheManagerPeerProviderFactories
+		mergeFactories cacheManagerPeerProviderFactories
 	}
 
 	protected void resolveBootstrapCacheLoaderFactoryProperties() {
-		if (_bootstrapCacheLoaderFactory) {
-			resolveClassName([_bootstrapCacheLoaderFactory], BOOTSTRAP_CACHE_LOADER_FACTORIES)
+		if (bootstrapCacheLoaderFactory) {
+			resolveClassName([bootstrapCacheLoaderFactory], BOOTSTRAP_CACHE_LOADER_FACTORIES)
 		}
 	}
 
 	protected void resolveCacheEventListenerFactoryProperties() {
-		resolveClassName _cacheEventListenerFactories, CACHE_EVENT_LISTENER_FACTORIES
-		mergeFactories _cacheEventListenerFactories
+		resolveClassName cacheEventListenerFactories, CACHE_EVENT_LISTENER_FACTORIES
+		mergeFactories cacheEventListenerFactories
 	}
 
 	protected void resolveClassName(List<Map<String, Object>> definitions, Map<String, String> classNames) {

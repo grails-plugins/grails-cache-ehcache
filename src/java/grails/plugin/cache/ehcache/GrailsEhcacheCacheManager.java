@@ -81,7 +81,7 @@ public class GrailsEhcacheCacheManager implements GrailsCacheManager, Initializi
 					throw new CacheException("Failed to get lock for " + name + " cache creation");
 				}
 			}
-			catch(InterruptedException e) {
+			catch (InterruptedException e) {
 				throw new CacheException("Failed to get lock for " + name + " cache creation");
 			}
 		}
