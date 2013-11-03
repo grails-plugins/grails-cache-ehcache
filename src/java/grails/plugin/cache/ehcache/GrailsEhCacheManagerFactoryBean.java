@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
@@ -118,27 +119,41 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 		}
 
 		public void rebuild(Resource location) throws IOException {
-	      for (String cacheName : getCacheNames()) {
-	      	removeCache(cacheName);
-	      }
-	      for(Object o : getCacheManagerEventListenerRegistry().getRegisteredListeners()){
-            if(o instanceof ManagementService){
-              // ManagementService must be disposed or a duplicate mbean will be registered, throwing an exception
-              ((ManagementService)o).dispose();
-            }
-	      }
+			for (String cacheName : getCacheNames()) {
+				removeCache(cacheName);
+			}
+			for (Object o : getCacheManagerEventListenerRegistry().getRegisteredListeners()) {
+				if (o instanceof ManagementService) {
+					// ManagementService must be disposed or a duplicate mbean will be registered, throwing an exception
+					((ManagementService)o).dispose();
+				}
+			}
 
 			status = Status.STATUS_UNINITIALISED;
 
-			// TODO ugly hack since the field is private
-			Field diskStorePath = ReflectionUtils.findField(getClass(), "diskStorePath", String.class);
-			ReflectionUtils.makeAccessible(diskStorePath);
-			ReflectionUtils.setField(diskStorePath, this, null);
+			ReflectionUtils.setField(findField("diskStorePathManager"), this, null);
+
+			@SuppressWarnings("unchecked")
+			Map<CacheManager, String> CACHE_MANAGERS_REVERSE_MAP = (Map<CacheManager, String>)getStaticValue(findField("CACHE_MANAGERS_REVERSE_MAP"));
+			final String name = CACHE_MANAGERS_REVERSE_MAP.remove(this);
+			@SuppressWarnings("unchecked")
+			Map<String, CacheManager> CACHE_MANAGERS_MAP = (Map<String, CacheManager>)getStaticValue(findField("CACHE_MANAGERS_MAP"));
+			CACHE_MANAGERS_MAP.remove(name);
 
 			// remove since it's going to be re-added
 			ALL_CACHE_MANAGERS.remove(this);
 
-	      init(null, null, null, location.getInputStream());
+			init(null, null, null, location.getInputStream());
+		}
+
+		protected Field findField(String name) {
+			Field f = ReflectionUtils.findField(getClass(), name);
+			ReflectionUtils.makeAccessible(f);
+			return f;
+		}
+
+		protected Object getStaticValue(Field f) {
+			return ReflectionUtils.getField(f, null);
 		}
 	}
 }
