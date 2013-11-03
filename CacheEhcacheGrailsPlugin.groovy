@@ -49,6 +49,18 @@ class CacheEhcacheGrailsPlugin {
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPCACHEEHCACHE']
 	def scm = [url: 'https://github.com/grails-plugins/grails-cache-ehcache']
 
+	def doWithWebDescriptor = { webXml ->
+		def filterMapping = webXml.'filter-mapping'
+
+		// If you are using persistent disk stores, or distributed caching, care should be taken to shutdown Ehcache.
+		// http://ehcache.org/documentation/operations/shutdown
+		filterMapping[filterMapping.size() - 1] + {
+			listener {
+				'listener-class'(ShutdownListener.name)
+			}
+		}
+	}
+
 	def doWithSpring = {
 		if (!isEnabled(application)) {
 			log.warn 'Ehcache Cache plugin is disabled'
@@ -109,18 +121,6 @@ class CacheEhcacheGrailsPlugin {
 			bean.initMethod = 'init'
 			bean.destroyMethod = 'dispose'
 			bean.constructorArgs = [ehcacheCacheManager, grailsCacheMbeanServer, true, true, true, true, true]
-		}
-	}
-
-	def doWithWebDescriptor = { webXml ->
-		def filterMapping = webXml.'filter-mapping'
-
-		// If you are using persistent disk stores, or distributed caching, care should be taken to shutdown Ehcache.
-		// http://ehcache.org/documentation/operations/shutdown
-		filterMapping[filterMapping.size() - 1] + {
-			listener {
-				'listener-class'(ShutdownListener.name)
-			}
 		}
 	}
 
