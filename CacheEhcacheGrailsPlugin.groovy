@@ -16,10 +16,13 @@ import grails.plugin.cache.ehcache.EhcacheConfigLoader
 import grails.plugin.cache.ehcache.GrailsEhCacheManagerFactoryBean
 import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
 import grails.plugin.cache.web.filter.ehcache.EhcachePageFragmentCachingFilter
+import net.sf.ehcache.constructs.web.ShutdownListener
+import net.sf.ehcache.management.ManagementService
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.jmx.support.MBeanServerFactoryBean
 
 class CacheEhcacheGrailsPlugin {
 
@@ -98,25 +101,25 @@ class CacheEhcacheGrailsPlugin {
 			expressionEvaluator = ref('webExpressionEvaluator')
 		}
 
-		mbeanServer(org.springframework.jmx.support.MBeanServerFactoryBean) {
-			locateExistingServerIfPossible=true
+		grailsCacheMbeanServer(MBeanServerFactoryBean) {
+			locateExistingServerIfPossible = true
 		}
 
-		ehCacheManagementService(net.sf.ehcache.management.ManagementService) { bean ->
-			bean.initMethod="init"
-			bean.destroyMethod="dispose"
-			bean.constructorArgs=[ehcacheCacheManager, mbeanServer, true, true, true, true, true]
+		ehCacheManagementService(ManagementService) { bean ->
+			bean.initMethod = 'init'
+			bean.destroyMethod = 'dispose'
+			bean.constructorArgs = [ehcacheCacheManager, grailsCacheMbeanServer, true, true, true, true, true]
 		}
 	}
 
 	def doWithWebDescriptor = { webXml ->
 		def filterMapping = webXml.'filter-mapping'
-		
+
 		// If you are using persistent disk stores, or distributed caching, care should be taken to shutdown Ehcache.
 		// http://ehcache.org/documentation/operations/shutdown
 		filterMapping[filterMapping.size() - 1] + {
-			'listener'{
-				'listener-class'('net.sf.ehcache.constructs.web.ShutdownListener')
+			listener {
+				'listener-class'(ShutdownListener.name)
 			}
 		}
 	}
