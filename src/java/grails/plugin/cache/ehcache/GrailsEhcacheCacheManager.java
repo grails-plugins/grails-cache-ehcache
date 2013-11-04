@@ -56,37 +56,40 @@ public class GrailsEhcacheCacheManager implements GrailsCacheManager, Initializi
 
 	private final Lock lock = new ReentrantLock();
 
-	public Cache getCache(String name) {
+	public Cache getCache(final String name) {
 		Cache cache = cacheMap.get(name);
 		if (cache == null) {
 			try {
-				// Ensure we don't have parallel access to cache creation which can lead to 'cache already exists' exceptions
-				if (lock.tryLock(200, TimeUnit.MILLISECONDS)) {
-					try {
-						// check the EhCache cache again (in case the cache was added at runtime)
-						Ehcache ehcache = cacheManager.getEhcache(name);
-						if (ehcache == null) {
-							// create a new one based on defaults
-							cacheManager.addCache(name);
-							ehcache = cacheManager.getEhcache(name);
-						}
-						cache = new GrailsEhcacheCache(ehcache);
-						addCache(cache);
-					}
-					finally {
-						lock.unlock();
-					}
-				}
-				else {
-					throw new CacheException("Failed to get lock for " + name + " cache creation");
-				}
+				cache = getOrCreateCache(name);
 			}
 			catch (InterruptedException e) {
 				throw new CacheException("Failed to get lock for " + name + " cache creation");
 			}
 		}
-
 		return cache;
+	}
+
+	protected Cache getOrCreateCache(String name) throws InterruptedException {
+		// Ensure we don't have parallel access to cache creation which can lead to 'cache already exists' exceptions
+		if (!lock.tryLock(200, TimeUnit.MILLISECONDS)) {
+			throw new CacheException("Failed to get lock for " + name + " cache creation");
+		}
+
+		try {
+			// check the EhCache cache again (in case the cache was added at runtime)
+			Ehcache ehcache = cacheManager.getEhcache(name);
+			if (ehcache == null) {
+				// create a new one based on defaults
+				cacheManager.addCache(name);
+				ehcache = cacheManager.getEhcache(name);
+			}
+			Cache cache = new GrailsEhcacheCache(ehcache);
+			addCache(cache);
+			return cache;
+		}
+		finally {
+			lock.unlock();
+		}
 	}
 
 	public boolean cacheExists(String name) {
