@@ -115,9 +115,11 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 		}
 
 		public void rebuild(Resource location) throws IOException {
+
 			for (String cacheName : getCacheNames()) {
 				removeCache(cacheName);
 			}
+
 			for (Object o : getCacheManagerEventListenerRegistry().getRegisteredListeners()) {
 				if (o instanceof ManagementService) {
 					// ManagementService must be disposed or a duplicate mbean will be registered, throwing an exception
