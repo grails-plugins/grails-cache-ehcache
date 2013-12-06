@@ -1,0 +1,45 @@
+Running the functional tests is a 2-step process. First you create the test apps using the create-test-app script, then you cd into each app directory and run the Ant build there.
+
+The create-test-app expects a config file in the project root directory called testapps.config.groovy. This is a ConfigSlurper-formatted file and shoud look something like this:
+
+   String version = '1.1.0'
+   String grailsHomeRoot = '/usr/local/javalib'
+   String dotGrailsCommon = '/home/burt/.grails'
+   String projectDirCommon = '/home/burt/workspace/testapps/grails-cache'
+   
+   v20 {
+      grailsVersion = '2.0.4'
+      pluginVersion = version
+      dotGrails = dotGrailsCommon
+      projectDir = projectDirCommon
+      grailsHome = grailsHomeRoot + '/grails-' + grailsVersion
+   }
+   
+   v21 {
+      grailsVersion = '2.1.4' // 2.1.5 has a plugin i18n bug
+      pluginVersion = version
+      projectDir = projectDirCommon
+      grailsHome = grailsHomeRoot + '/grails-' + grailsVersion
+   }
+   
+   v22 {
+      grailsVersion = '2.2.4'
+      pluginVersion = version
+      dotGrails = dotGrailsCommon
+      projectDir = projectDirCommon
+      grailsHome = grailsHomeRoot + '/grails-' + grailsVersion
+   }
+   
+   v23 {
+      grailsVersion = '2.3.4'
+      pluginVersion = version
+      dotGrails = dotGrailsCommon
+      projectDir = projectDirCommon
+      grailsHome = grailsHomeRoot + '/grails-' + grailsVersion
+   }
+
+Each top-level property is a configuration, and it should contain the properties shown. 'pluginVersion' is the current version of the plugin. It should be the same value for each configuration block. Likewise 'projectDir' is the root directory that will contain the generated projects and should probably be consistent. 'grailsHome' is the location of the Grails install to use to build each project.
+
+After running the script, you can cd into each project's folder and run the tests with 'grails test-app -functional'.
+
+Note that after a group of tests is finished, the application can be run using 'grails run-app' for manual testing with that configuration.

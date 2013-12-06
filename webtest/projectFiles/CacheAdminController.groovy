@@ -35,9 +35,20 @@ class CacheAdminController {
 		[cache: cache, data: data]
 	}
 
+	def cacheItem(String name, String key) {
+		def value = grailsCacheManager.getCache(name).get(key)?.get()
+		String html
+		if (value instanceof PageInfo) {
+			html = new String(value.ungzippedBody, response.characterEncoding)
+		}
+
+		[name: name, key: key, value: value, html: html]
+	}
+
 	def clearCache(String cacheName) {
 		Cache cache = grailsCacheManager.getCache(cacheName)
 		cache.clear()
-		render "cleared cache '$cacheName'"
+		flash.message = "cleared cache '$cacheName'"
+		redirect action: 'index'
 	}
 }

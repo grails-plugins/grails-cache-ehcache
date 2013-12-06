@@ -3,12 +3,11 @@ includeTargets << grailsScript('_GrailsBootstrap')
 functionalTestPluginVersion = '1.2.7'
 projectfiles = new File(basedir, 'webtest/projectFiles')
 grailsHome = null
-dotGrails = null
 grailsVersion = null
+dotGrails = null
 projectDir = null
 appName = null
 pluginVersion = null
-pluginZip = null
 testprojectRoot = null
 deleteAll = false
 
@@ -30,16 +29,37 @@ target(createCacheEhcacheTestApps: 'Creates test apps for functional tests') {
 	}
 }
 
+private void init(String name, config) {
+
+	pluginVersion = config.pluginVersion
+	if (!pluginVersion) {
+		error "pluginVersion wasn't specified for config '$name'"
+	}
+
+	pluginZip = new File(basedir, "grails-cache-ehcache-${pluginVersion}.zip")
+	if (!pluginZip.exists()) {
+		error "plugin $pluginZip.absolutePath not found"
+	}
+
+	grailsHome = config.grailsHome
+	if (!new File(grailsHome).exists()) {
+		error "Grails home $grailsHome not found"
+	}
+
+	projectDir = config.projectDir
+	appName = 'cache-ehcache-test-' + name
+	testprojectRoot = "$projectDir/$appName"
+
+	grailsVersion = config.grailsVersion
+}
+
 private void createApp() {
 
 	ant.mkdir dir: projectDir
 
 	deleteDir testprojectRoot
-	deleteDir "$dotGrails/projects/$appName"
 
-	callGrails(grailsHome, projectDir, 'dev', 'create-app') {
-		ant.arg value: appName
-	}
+	callGrails grailsHome, projectDir, 'dev', 'create-app', [appName]
 }
 
 private void installPlugins() {
@@ -49,6 +69,14 @@ private void installPlugins() {
 	contents = contents.replace('grails.project.class.dir = "target/classes"', "grails.project.work.dir = 'target'")
 	contents = contents.replace('grails.project.test.class.dir = "target/test-classes"', '')
 	contents = contents.replace('grails.project.test.reports.dir = "target/test-reports"', '')
+
+	contents = contents.replace('//mavenLocal()', 'mavenLocal()')
+	contents = contents.replace('grails.project.fork', 'grails.project.forkDISABLED')
+
+	contents = contents.replace('plugins {', """plugins {
+		test ":cache-ehcache:$pluginVersion"
+		test ":functional-test:$functionalTestPluginVersion"
+""")
 
 	buildConfig.withWriter { it.writeLine contents }
 
@@ -75,16 +103,8 @@ grails.cache.config = {
 
 	configGroovy.withWriter { it.writeLine contents }
 
-	callGrails(grailsHome, testprojectRoot, 'dev', 'install-plugin') {
-		ant.arg value: "functional-test $functionalTestPluginVersion"
-	}
-
-	callGrails(grailsHome, testprojectRoot, 'dev', 'install-plugin') {
-		ant.arg value: pluginZip.absolutePath
-	}
-
-	// trigger plugin initialization
-	callGrails(grailsHome, testprojectRoot, 'dev', 'compile')
+	callGrails grailsHome, testprojectRoot, 'dev', 'compile', null, true // can fail when installing the functional-test plugin
+	callGrails grailsHome, testprojectRoot, 'dev', 'compile'
 }
 
 private void copyProjectFiles() {
@@ -131,9 +151,7 @@ private void copyTests() {
 }
 
 private void generateFiles() {
-	callGrails(grailsHome, testprojectRoot, 'dev', 'generate-all') {
-		ant.arg value: 'Book'
-	}
+	callGrails grailsHome, testprojectRoot, 'dev', 'generate-all', ['Book']
 
 	ant.delete file: "$testprojectRoot/test/unit/BookControllerTests.groovy"
 
@@ -172,47 +190,35 @@ private void deleteDir(String path) {
 	ant.delete dir: path
 }
 
-private void init(String name, config) {
-
-	pluginVersion = config.pluginVersion
-	if (!pluginVersion) {
-		error "pluginVersion wasn't specified for config '$name'"
-	}
-
-	pluginZip = new File(basedir, "grails-cache-ehcache-${pluginVersion}.zip")
-	if (!pluginZip.exists()) {
-		error "plugin $pluginZip.absolutePath not found"
-	}
-
-	grailsHome = config.grailsHome
-	if (!new File(grailsHome).exists()) {
-		error "Grails home $grailsHome not found"
-	}
-
-	projectDir = config.projectDir
-	appName = 'cache-ehcache-test-' + name
-	testprojectRoot = "$projectDir/$appName"
-
-	grailsVersion = config.grailsVersion
-	dotGrails = config.dotGrails + '/' + grailsVersion
-}
-
 private void error(String message) {
 	errorMessage "\nERROR: $message"
 	exit 1
 }
 
-private void callGrails(String grailsHome, String dir, String env, String action, extraArgs = null) {
+private void callGrails(String grailsHome, String dir, String env, String action, List extraArgs = null, boolean ignoreFailure = false) {
 
-	println "running: grails $env $action in dir $dir"
+	String resultproperty = 'exitCode' + System.currentTimeMillis()
+	String outputproperty = 'execOutput' + System.currentTimeMillis()
 
-	ant.exec(executable: "$grailsHome/bin/grails", dir: dir, failonerror: 'true') {
+	println "Running 'grails $env $action ${extraArgs?.join(' ') ?: ''}'"
+
+	ant.exec(executable: "${grailsHome}/bin/grails", dir: dir, failonerror: false,
+				resultproperty: resultproperty, outputproperty: outputproperty) {
 		ant.env key: 'GRAILS_HOME', value: grailsHome
 		ant.arg value: env
 		ant.arg value: action
-		extraArgs?.call()
+		extraArgs.each { ant.arg value: it }
+		ant.arg value: '--stacktrace'
+	}
+
+	println ant.project.getProperty(outputproperty)
+
+	int exitCode = ant.project.getProperty(resultproperty) as Integer
+	if (exitCode && !ignoreFailure) {
+		exit exitCode
 	}
 }
+
 
 printMessage = { String message -> event('StatusUpdate', [message]) }
 errorMessage = { String message -> event('StatusError', [message]) }

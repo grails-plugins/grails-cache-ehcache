@@ -1,5 +1,6 @@
 <html>
 <head>
+<meta name="layout" content="main">
 <title>Cache '${cache.name}'</title>
 </head>
 
@@ -20,7 +21,7 @@ Cache '${cache.name}'<br/>
 
 <g:each in="${data}" var="row">
 <tr>
-	<td>${row.key}</td>
+	<td><g:link action='cacheItem' params="[name: cache.name, key: row.key]">${row.key}</g:link></td>
 	<td>${row.value}</td>
 	<td>${row.html?.encodeAsHTML() ?: '&nbsp;'}</td>
 </tr>
