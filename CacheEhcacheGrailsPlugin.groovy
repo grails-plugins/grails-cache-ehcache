@@ -40,7 +40,7 @@ class CacheEhcacheGrailsPlugin {
 
 	String title = 'Ehcache Cache Plugin'
 	String author = 'Burt Beckwith'
-	String authorEmail = 'beckwithb@vmware.com'
+	String authorEmail = 'burt@burtbeckwith.com'
 	String description = 'An Ehcache-based implementation of the Cache plugin'
 	String documentation = 'http://grails-plugins.github.io/grails-cache-ehcache/'
 
