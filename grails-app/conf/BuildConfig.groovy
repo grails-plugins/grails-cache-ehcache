@@ -13,7 +13,7 @@ grails.project.dependency.resolution = {
 	}
 
 	dependencies {
-		compile 'net.sf.ehcache:ehcache-core:2.6.6', {
+		compile 'net.sf.ehcache:ehcache:2.7.4', {
 			excludes 'bsh', 'btm', 'commons-logging', 'derby', 'dom4j', 'hamcrest-core',
 			         'hamcrest-library', 'hibernate', 'hibernate-core', 'hibernate-ehcache',
 			         'javassist', 'jta', 'junit', 'mockito-core', 'servlet-api', 'sizeof-agent',

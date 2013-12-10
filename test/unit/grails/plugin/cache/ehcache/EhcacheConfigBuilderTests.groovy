@@ -472,7 +472,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute 'mycache', 'name', cache
 		assertAttribute 'false', 'eternal', cache
 		assertAttribute 'true', 'overflowToDisk', cache
-		assertAttribute '10000', 'maxElementsInMemory', cache
+		assertAttribute '5M', 'maxBytesLocalHeap', cache
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 

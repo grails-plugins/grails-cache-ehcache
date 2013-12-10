@@ -28,9 +28,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.DiskStorePathManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.Statistics;
 import net.sf.ehcache.Status;
 import net.sf.ehcache.bootstrap.BootstrapCacheLoader;
 import net.sf.ehcache.config.CacheConfiguration;
@@ -41,9 +41,8 @@ import net.sf.ehcache.loader.CacheLoader;
 import net.sf.ehcache.search.Attribute;
 import net.sf.ehcache.search.Query;
 import net.sf.ehcache.search.attribute.DynamicAttributesExtractor;
-import net.sf.ehcache.statistics.CacheUsageListener;
-import net.sf.ehcache.statistics.LiveCacheStatistics;
-import net.sf.ehcache.statistics.sampled.SampledCacheStatistics;
+import net.sf.ehcache.search.attribute.DynamicAttributesExtractor;
+import net.sf.ehcache.statistics.StatisticsGateway;
 import net.sf.ehcache.terracotta.TerracottaNotRunningException;
 import net.sf.ehcache.transaction.manager.TransactionManagerLookup;
 import net.sf.ehcache.writer.CacheWriter;
@@ -161,7 +160,9 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 
 			status = Status.STATUS_UNINITIALISED;
 
-			ReflectionUtils.setField(findField("diskStorePathManager"), this, null);
+			Field diskStorePathManager = ReflectionUtils.findField(getClass(), "diskStorePathManager", DiskStorePathManager.class);
+			ReflectionUtils.makeAccessible(diskStorePathManager);
+			ReflectionUtils.setField(diskStorePathManager, this, null);
 
 			@SuppressWarnings("unchecked")
 			Map<CacheManager, String> CACHE_MANAGERS_REVERSE_MAP = (Map<CacheManager, String>)getStaticValue(findField("CACHE_MANAGERS_REVERSE_MAP"));
@@ -357,13 +358,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			}
 
 			@Override
-			public int getSizeBasedOnAccuracy(int statisticsAccuracy)
-					throws IllegalArgumentException, IllegalStateException,
-					CacheException {
-				return getUnderlyingEhcache(name).getSizeBasedOnAccuracy(statisticsAccuracy);
-			}
-
-			@Override
 			public long calculateInMemorySize() throws IllegalStateException,
 					CacheException {
 				return getUnderlyingEhcache(name).calculateInMemorySize();
@@ -447,21 +441,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			}
 
 			@Override
-			public void clearStatistics() {
-				getUnderlyingEhcache(name).clearStatistics();
-			}
-
-			@Override
-			public int getStatisticsAccuracy() {
-				return getUnderlyingEhcache(name).getStatisticsAccuracy();
-			}
-
-			@Override
-			public void setStatisticsAccuracy(int statisticsAccuracy) {
-				getUnderlyingEhcache(name).setStatisticsAccuracy(statisticsAccuracy);
-			}
-
-			@Override
 			public void evictExpiredElements() {
 				getUnderlyingEhcache(name).evictExpiredElements();
 			}
@@ -474,31 +453,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			@Override
 			public boolean isValueInCache(Object value) {
 				return getUnderlyingEhcache(name).isValueInCache(value);
-			}
-
-			@Override
-			public Statistics getStatistics() throws IllegalStateException {
-				return getUnderlyingEhcache(name).getStatistics();
-			}
-
-			@Override
-			public LiveCacheStatistics getLiveCacheStatistics()
-					throws IllegalStateException {
-				return getUnderlyingEhcache(name).getLiveCacheStatistics();
-			}
-
-			@Override
-			public void registerCacheUsageListener(
-					CacheUsageListener cacheUsageListener)
-					throws IllegalStateException {
-				getUnderlyingEhcache(name).registerCacheUsageListener(cacheUsageListener);
-			}
-
-			@Override
-			public void removeCacheUsageListener(
-					CacheUsageListener cacheUsageListener)
-					throws IllegalStateException {
-				getUnderlyingEhcache(name).removeCacheUsageListener(cacheUsageListener);
 			}
 
 			@Override
@@ -551,11 +505,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			@Override
 			public List<CacheExtension> getRegisteredCacheExtensions() {
 				return getUnderlyingEhcache(name).getRegisteredCacheExtensions();
-			}
-
-			@Override
-			public float getAverageGetTime() {
-				return getUnderlyingEhcache(name).getAverageGetTime();
 			}
 
 			@Override
@@ -633,31 +582,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			}
 
 			@Override
-			public boolean isStatisticsEnabled() {
-				return getUnderlyingEhcache(name).isStatisticsEnabled();
-			}
-
-			@Override
-			public void setStatisticsEnabled(boolean enableStatistics) {
-				getUnderlyingEhcache(name).setStatisticsEnabled(enableStatistics);
-			}
-
-			@Override
-			public SampledCacheStatistics getSampledCacheStatistics() {
-				return getUnderlyingEhcache(name).getSampledCacheStatistics();
-			}
-
-			@Override
-			public void setSampledStatisticsEnabled(boolean enableStatistics) {
-				getUnderlyingEhcache(name).setSampledStatisticsEnabled(enableStatistics);
-			}
-
-			@Override
-			public boolean isSampledStatisticsEnabled() {
-				return getUnderlyingEhcache(name).isSampledStatisticsEnabled();
-			}
-
-			@Override
 			public Object getInternalContext() {
 				return getUnderlyingEhcache(name).getInternalContext();
 			}
@@ -669,7 +593,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 
 			@Override
 			public CacheWriterManager getWriterManager() {
-				// TODO Auto-generated method stub
 				return getUnderlyingEhcache(name).getWriterManager();
 			}
 
@@ -735,16 +658,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			@Override
 			public boolean isSearchable() {
 				return getUnderlyingEhcache(name).isSearchable();
-			}
-
-			@Override
-			public long getAverageSearchTime() {
-				return getUnderlyingEhcache(name).getAverageSearchTime();
-			}
-
-			@Override
-			public long getSearchesPerSecond() {
-				return getUnderlyingEhcache(name).getSearchesPerSecond();
 			}
 
 			@Override
@@ -845,11 +758,6 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			}
 
 			@Override
-			public boolean isPinned(Object arg0) {
-				return getUnderlyingEhcache(name).isPinned(arg0);
-			}
-
-			@Override
 			public void putAll(Collection<Element> arg0)
 					throws IllegalArgumentException, IllegalStateException,
 					CacheException {
@@ -881,13 +789,9 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			}
 
 			@Override
-			public void setPinned(Object arg0, boolean arg1) {
-				getUnderlyingEhcache(name).setPinned(arg0, arg1);
-			}
-
-			@Override
-			public void unpinAll() {
-				getUnderlyingEhcache(name).unpinAll();
+			public StatisticsGateway getStatistics()
+					throws IllegalStateException {
+				return getUnderlyingEhcache(name).getStatistics();
 			}
 		}
 

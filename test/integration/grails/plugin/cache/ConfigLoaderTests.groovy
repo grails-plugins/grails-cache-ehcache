@@ -50,8 +50,7 @@ class ConfigLoaderTests extends GroovyTestCase {
 				name 'mycache2'
 				eternal false
 				overflowToDisk true
-				maxElementsInMemory 10000
-				maxElementsOnDisk 10000000
+				maxBytesLocalHeap "20M"
 			}
 
 			defaults {
@@ -81,7 +80,7 @@ class ConfigLoaderTests extends GroovyTestCase {
 		CacheConfiguration configuration = cache.nativeCache.cacheConfiguration
 
 		assertTrue configuration.overflowToDisk
-		assertEquals 2, configuration.maxElementsInMemory
+		assertEquals "20M", configuration.maxBytesLocalHeapInput
 		assertEquals 3, configuration.maxElementsOnDisk
 		assertFalse configuration.eternal
 		assertEquals 1234, configuration.timeToLiveSeconds
@@ -113,7 +112,7 @@ class ConfigLoaderTests extends GroovyTestCase {
 				name 'mycache'
 				eternal false
 				overflowToDisk true
-				maxElementsInMemory 10000
+				maxBytesLocalHeap "10M"
 				maxElementsOnDisk 10000000
 			}
 

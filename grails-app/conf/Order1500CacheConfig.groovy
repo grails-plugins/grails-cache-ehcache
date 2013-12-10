@@ -5,7 +5,7 @@ config = {
 		name 'the_cache'
 		eternal false
 		overflowToDisk true
-		maxElementsInMemory 2
+		maxBytesLocalHeap "20M"
 		maxElementsOnDisk 3
 	}
 }
