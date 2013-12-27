@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -40,7 +41,6 @@ import net.sf.ehcache.extension.CacheExtension;
 import net.sf.ehcache.loader.CacheLoader;
 import net.sf.ehcache.search.Attribute;
 import net.sf.ehcache.search.Query;
-import net.sf.ehcache.search.attribute.DynamicAttributesExtractor;
 import net.sf.ehcache.search.attribute.DynamicAttributesExtractor;
 import net.sf.ehcache.statistics.StatisticsGateway;
 import net.sf.ehcache.terracotta.TerracottaNotRunningException;
@@ -648,6 +648,12 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 			public <T> Attribute<T> getSearchAttribute(String attributeName)
 					throws CacheException {
 				return getUnderlyingEhcache(name).getSearchAttribute(attributeName);
+			}
+
+			@Override
+			public Set<Attribute> getSearchAttributes()
+					throws CacheException {
+				return getUnderlyingEhcache(name).getSearchAttributes();
 			}
 
 			@Override
