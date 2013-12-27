@@ -10,7 +10,7 @@ import net.sf.ehcache.hibernate.EhCacheRegionFactory;
 import org.hibernate.cfg.Settings;
 
 /**
- * Use the existing ehCache CacheManager instance instead of creating a new instance.
+ * Use the existing ehCache CacheManager instance instead of creating a new instance. For use with Hibernate 3.x (use {@link grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory4} with Hibernate 4.0+).
  * Configure in DataSource.groovy: hibernate.cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory
  *
  * @author Craig Andrews

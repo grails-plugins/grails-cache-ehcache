@@ -124,7 +124,8 @@ To have Hibernate use ehcache, modify DataSource.groovy:
 hibernate {
    cache.use_second_level_cache = true // set based on whether the second level cache is desired
    cache.use_query_cache = true // set based on whether the query cache is desired
-   cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory'
+   cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory' // For Hibernate before 4.0
+   cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory4' // For Hibernate before 4.0 and higher
 }
 {code}
 
