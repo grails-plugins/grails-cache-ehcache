@@ -34,9 +34,9 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute 'autodetect', 'monitoring'
 		assertAttribute 'true', 'dynamicConfig'
 		assertAttribute '15', 'defaultTransactionTimeoutInSeconds'
-		assertAttribute '0', 'maxBytesLocalHeap'
-		assertAttribute '0', 'maxBytesLocalOffHeap'
-		assertAttribute '0', 'maxBytesLocalDisk'
+		assertAttribute '', 'maxBytesLocalHeap'
+		assertAttribute '', 'maxBytesLocalOffHeap'
+		assertAttribute '', 'maxBytesLocalDisk'
 
 		builder = null
 
@@ -472,7 +472,7 @@ class EhcacheConfigBuilderTests extends GrailsUnitTestCase {
 		assertAttribute 'mycache', 'name', cache
 		assertAttribute 'false', 'eternal', cache
 		assertAttribute 'true', 'overflowToDisk', cache
-		assertAttribute '10000', 'maxElementsInMemory', cache
+		assertAttribute '5M', 'maxBytesLocalHeap', cache
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 

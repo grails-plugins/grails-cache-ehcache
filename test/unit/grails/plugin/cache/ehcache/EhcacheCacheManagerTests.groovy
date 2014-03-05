@@ -30,6 +30,11 @@ class EhcacheCacheManagerTests extends GroovyTestCase {
 		manager.cacheManager = CacheManager.create()
 	}
 
+	@After
+	public void after() {
+		manager.cacheManager.shutdown()
+	}
+
 	void testCacheCreationSerialAccess() {
 		(0..10).each {
 			assert manager.getCache('testCache')

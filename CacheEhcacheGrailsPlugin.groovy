@@ -70,15 +70,22 @@ class CacheEhcacheGrailsPlugin {
 		def cacheConfig = application.config.grails.cache
 		def ehcacheConfig = cacheConfig.ehcache
 		def ehcacheConfigLocation
-		if (cacheConfig.config instanceof Closure || application.cacheConfigClasses) {
-			// leave the location null to indicate that the real configuration will
-			// happen in doWithApplicationContext (from the core plugin, using this
-			// plugin's grailsCacheConfigLoader)
+		boolean reloadable
+
+		if (ehcacheConfig.reloadable instanceof Boolean) {
+			reloadable = ehcacheConfig.reloadable
+		}else{
+			reloadable = true
 		}
-		else if (ehcacheConfig.ehcacheXmlLocation instanceof CharSequence) {
+		if (ehcacheConfig.ehcacheXmlLocation instanceof CharSequence) {
 			// use the specified location
 			ehcacheConfigLocation = ehcacheConfig.ehcacheXmlLocation
 			log.info "Using Ehcache configuration file $ehcacheConfigLocation"
+		}
+		else if (cacheConfig.config instanceof Closure || application.cacheConfigClasses) {
+			// leave the location null to indicate that the real configuration will
+			// happen in doWithApplicationContext (from the core plugin, using this
+			// plugin's grailsCacheConfigLoader)
 		}
 		else {
 			// no config and no specified location, so look for ehcache.xml in the classpath,
@@ -97,9 +104,12 @@ class CacheEhcacheGrailsPlugin {
 
 		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) {
 			configLocation = ehcacheConfigLocation
+			rebuildable = reloadable
 		}
 
-		grailsCacheConfigLoader(EhcacheConfigLoader)
+		grailsCacheConfigLoader(EhcacheConfigLoader) {
+			rebuildable = reloadable
+		}
 
 		grailsCacheManager(GrailsEhcacheCacheManager) {
 			cacheManager = ref('ehcacheCacheManager')

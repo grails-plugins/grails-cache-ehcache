@@ -50,8 +50,7 @@ class ConfigLoaderTests extends GroovyTestCase {
 				name 'mycache2'
 				eternal false
 				overflowToDisk true
-				maxElementsInMemory 10000
-				maxElementsOnDisk 10000000
+				maxBytesLocalHeap "20M"
 			}
 
 			defaults {
@@ -75,13 +74,13 @@ class ConfigLoaderTests extends GroovyTestCase {
 
 		Cache cache = grailsCacheManager.getCache(name)
 
-		assertTrue cache instanceof GrailsEhcacheCache
+		org.junit.Assert.assertThat(cache, org.hamcrest.CoreMatchers.instanceOf(GrailsEhcacheCache.class));
 
-		assertTrue cache.nativeCache instanceof net.sf.ehcache.Cache
-		CacheConfiguration configuration = cache.nativeCache.@configuration
+		org.junit.Assert.assertThat(cache.nativeCache, org.hamcrest.CoreMatchers.instanceOf(net.sf.ehcache.Ehcache.class));
+		CacheConfiguration configuration = cache.nativeCache.cacheConfiguration
 
 		assertTrue configuration.overflowToDisk
-		assertEquals 2, configuration.maxElementsInMemory
+		assertEquals "20M", configuration.maxBytesLocalHeapInput
 		assertEquals 3, configuration.maxElementsOnDisk
 		assertFalse configuration.eternal
 		assertEquals 1234, configuration.timeToLiveSeconds
@@ -113,7 +112,7 @@ class ConfigLoaderTests extends GroovyTestCase {
 				name 'mycache'
 				eternal false
 				overflowToDisk true
-				maxElementsInMemory 10000
+				maxBytesLocalHeap "10M"
 				maxElementsOnDisk 10000000
 			}
 

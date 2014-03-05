@@ -1,4 +1,8 @@
 grails.project.work.dir = 'target'
+
+grails.project.repos.grailsCentral.username = System.getenv("GRAILS_CENTRAL_USERNAME")
+grails.project.repos.grailsCentral.password = System.getenv("GRAILS_CENTRAL_PASSWORD")
+
 grails.project.docs.output.dir = 'docs/manual' // for gh-pages branch
 
 grails.project.dependency.resolution = {
@@ -13,7 +17,7 @@ grails.project.dependency.resolution = {
 	}
 
 	dependencies {
-		compile 'net.sf.ehcache:ehcache-core:2.6.6', {
+		compile 'net.sf.ehcache:ehcache:2.8.1', {
 			excludes 'bsh', 'btm', 'commons-logging', 'derby', 'dom4j', 'hamcrest-core',
 			         'hamcrest-library', 'hibernate', 'hibernate-core', 'hibernate-ehcache',
 			         'javassist', 'jta', 'junit', 'mockito-core', 'servlet-api', 'sizeof-agent',

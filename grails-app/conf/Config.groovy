@@ -12,7 +12,7 @@ grails.cache.config = {
 		name 'mycache'
 		eternal false
 		overflowToDisk true
-		maxElementsInMemory 10000
+		maxBytesLocalHeap "5M"
 		maxElementsOnDisk 10000000
 	}
 
