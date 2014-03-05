@@ -11,3 +11,10 @@ before_script:
 script: grails refresh-dependencies --non-interactive
   && grails test-app --non-interactive
   && grails package-plugin --non-interactive
+  && if [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_REPO_SLUG == 'grails-plugins/grails-cache-ehcache' ]]; then ./grailsw publish-plugin --no-scm --allow-overwrite --non-interactive ; else echo "Not on master branch, so not publishing"; fi
+env:
+  global:
+  # travis encrypt -a env.global 'GRAILS_CENTRAL_USERNAME=myusername'
+  # travis encrypt -a env.global 'GRAILS_CENTRAL_PASSWORD=mypassword'
+  - secure: ms4k1Py1fEILvqY3LfDdRrgY9CiKegsUt3dw9gDeZ6Udw+rHJ5If3nu/ByXM8DB72fbp6MiFFxfEMDyeeA7UZyZO6jyBVxMAimZ2MJT2UCnKxKD1xfXQFWqZmHgEilxSuBtsEjWWM2cfQ8i3H7O0VAjprMNYJRmKbPhUn6cF8TI=
+  - secure: Sd35PRqnUV9+WCCbG3bQw8XzFrJRPFxE1KHAkLXCn9u9Psl+A42Z49IvRahVuFS7roN4/0ae+gD/cAC4eX9fXxM7AEUuW4bxDbBlcvqw7oD4I0cYoVQaGIk6KfAhTienWzNmxaRtOlNwMVs3eZbTtQ4lT98NDp1rbU4Cpxh5CbU=
