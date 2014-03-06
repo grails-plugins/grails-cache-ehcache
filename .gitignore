@@ -13,6 +13,5 @@ target
 *.log
 *.zip
 plugin.xml
-/docs/
 .DS_Store
 web-app
