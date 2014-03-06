@@ -1,0 +1,4 @@
+DefaultPackage
+grails.plugin.cache.ehcache
+grails.plugin.cache.ehcache.hibernate
+grails.plugin.cache.web.filter.ehcache
