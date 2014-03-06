@@ -28,7 +28,7 @@ class CacheEhcacheGrailsPlugin {
 
 	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.CacheEhcacheGrailsPlugin')
 
-	String version = '1.0.1'
+	String version = '1.0.2-SNAPSHOT'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
 	def pluginExcludes = [
