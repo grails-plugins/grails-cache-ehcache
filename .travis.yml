@@ -4,11 +4,7 @@ jdk:
 before_script:
   # if we run on the same box as previous build, make sure target is clean
   - rm -rf target
-script: ./grailsw refresh-dependencies --non-interactive
-  && ./grailsw test-app --non-interactive
-  && ./grailsw package-plugin --non-interactive
-  && ./grailsw doc --pdf --non-interactive
-  && if [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_REPO_SLUG == 'grails-plugins/grails-cache-ehcache' ]]; then ./doc.sh && ./grailsw publish-plugin --no-scm --allow-overwrite --non-interactive ; else echo "Not on master branch, so not publishing"; fi
+script: ./travis-build.sh
 env:
   global:
   - GIT_NAME="Craig Andrews"
