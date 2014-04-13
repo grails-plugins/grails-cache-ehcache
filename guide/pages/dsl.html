@@ -322,7 +322,12 @@ grails.cache.config = &#123;
           eternal=<span class="java&#45;quote">"<span class="java&#45;keyword">false</span>"</span>
           overflowToDisk=<span class="java&#45;quote">"<span class="java&#45;keyword">false</span>"</span>
           maxElementsOnDisk=<span class="java&#45;quote">"0"</span>
-   /&#62;<p class="paragraph"/>&#60;/ehcache&#62;</pre></div>
+   /&#62;<p class="paragraph"/>&#60;/ehcache&#62;</pre></div><p class="paragraph"/>
+<h5>Manual Peer Discovery</h5><p class="paragraph"/>In some cases it may be necessary to specify peers directly instead of via Multicast (i.e. Amazon EC2), To do this you must specify your rmiUrls via the following dsl:<p class="paragraph"/><div class="code"><pre>cacheManagerPeerProviderFactory &#123;
+      env 'production'
+      factoryType 'rmi'<p class="paragraph"/>      rmiUrl '//server2:40001'
+      rmiUrl '//server2:40001'
+   &#125;</pre></div><p class="paragraph"/>Note: This varies from the standard xml DSL for ehcache (don't need rmiUrls pipe seperated string). The plugin is smart enough to automatically change <code>peerDiscovery</code> to 'manual' if rmiUrl is specified.
 
 
 
