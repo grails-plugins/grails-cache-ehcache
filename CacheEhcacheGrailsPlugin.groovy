@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.Map;
+
 import grails.plugin.cache.ehcache.EhcacheConfigLoader
 import grails.plugin.cache.ehcache.GrailsEhCacheManagerFactoryBean
 import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
@@ -19,7 +21,13 @@ import grails.plugin.cache.web.filter.ehcache.EhcachePageFragmentCachingFilter
 import net.sf.ehcache.constructs.web.ShutdownListener
 import net.sf.ehcache.management.ManagementService
 
+import org.apache.commons.io.IOUtils;
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.tools.GroovyClass;
+import org.codehaus.groovy.tools.RootLoader;
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jmx.support.MBeanServerFactoryBean
@@ -27,6 +35,96 @@ import org.springframework.jmx.support.MBeanServerFactoryBean
 class CacheEhcacheGrailsPlugin {
 
 	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.CacheEhcacheGrailsPlugin')
+	
+	private static final String BEAN_EHCACHE_REGION_FACTORY = '''
+package grails.plugin.cache.ehcache.hibernate;
+
+import grails.util.Holders;
+
+import java.util.Properties;
+
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.hibernate.EhCacheRegionFactory;
+
+import org.hibernate.cfg.Settings;
+
+/**
+ * Use the existing ehCache CacheManager instance instead of creating a new instance. For use with Hibernate 3.x (use {@link grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory4} with Hibernate 4.0+).
+ * Configure in DataSource.groovy: hibernate.cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory
+ *
+ * @author Craig Andrews
+ * @author Burt Beckwith
+ */
+public class BeanEhcacheRegionFactory extends EhCacheRegionFactory {
+
+	/**
+	 * Creates an EhCacheRegionFactory that uses a predefined CacheManager bean
+	 */
+	public BeanEhcacheRegionFactory(final Properties properties) {
+		super(properties);
+	}
+
+	public void start(final Settings settings, final Properties properties) throws org.hibernate.cache.CacheException {
+		this.settings = settings;
+		manager = Holders.getGrailsApplication().getMainContext().getBean("ehcacheCacheManager", CacheManager.class);
+		mbeanRegistrationHelper.registerMBean(manager, properties);
+	}
+
+	public void stop() {
+		if (manager == null) {
+			return;
+		}
+
+		try {
+			mbeanRegistrationHelper.unregisterMBean();
+			manager.shutdown();
+			manager = null;
+		}
+		catch (net.sf.ehcache.CacheException e) {
+			throw new org.hibernate.cache.CacheException(e);
+		}
+	}
+}
+	'''
+	private static final String BEAN_EHCACHE_REGION_FACTORY4 = '''
+package grails.plugin.cache.ehcache.hibernate;
+
+import grails.util.Holders;
+
+import java.util.Properties;
+
+import net.sf.ehcache.CacheManager;
+
+import org.hibernate.cache.CacheException;
+import org.hibernate.cache.ehcache.EhCacheRegionFactory;
+import org.hibernate.cfg.Settings;
+
+/**
+ * Use the existing ehCache CacheManager instance instead of creating a new instance. For use with Hibernate 4.0+.
+ * Configure in DataSource.groovy: hibernate.cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory4
+ *
+ * Note that most of this code is copied from {@link org.hibernate.cache.DelegatingRegionFactory}, which cannot be extended in this case as its constructor is package-scoped (and this class is not in the same package).
+ * 
+ * @author Craig Andrews
+ */
+public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
+	
+	public BeanEhcacheRegionFactory4(){
+		super();
+	}
+
+    public BeanEhcacheRegionFactory4(final Properties properties) {
+        super(properties);
+    }
+
+    public final void start(final Settings settings, final Properties properties) throws CacheException {
+		this.settings = settings;
+		manager = Holders.getGrailsApplication().getMainContext().getBean("ehcacheCacheManager", CacheManager.class);
+		mbeanRegistrationHelper.registerMBean(manager, properties);
+    }
+
+}
+	'''
 
 	String version = '1.0.2-SNAPSHOT'
 	String grailsVersion = '2.0 > *'
@@ -48,6 +146,32 @@ class CacheEhcacheGrailsPlugin {
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPCACHEEHCACHE']
 	def scm = [url: 'https://github.com/grails-plugins/grails-cache-ehcache']
+	
+	public CacheEhcacheGrailsPlugin(){
+		// conditionally load the Hibernate 3 or Hibernate 4 classes
+		Map<String, String> toLoad = new HashMap<String,String>(2)
+		try{
+			Class.forName('org.hibernate.cache.TimestampsRegion')
+			toLoad.put('grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory', BEAN_EHCACHE_REGION_FACTORY)
+		}catch(ClassNotFoundException e){
+			//ignore
+		}
+		try{
+			Class.forName('org.hibernate.cache.spi.TimestampsRegion')
+			toLoad.put('grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory4', BEAN_EHCACHE_REGION_FACTORY4)
+		}catch(ClassNotFoundException e){
+			//ignore
+		}
+		ClassLoader classLoader = GrailsApplication.class.classLoader
+		for(Map.Entry<String, String> entry : toLoad){
+			CompilationUnit compilationUnit = new CompilationUnit()
+			compilationUnit.addSource(entry.key, entry.value)
+			compilationUnit.compile(Phases.CLASS_GENERATION)
+			byte[] bytes = ((GroovyClass)compilationUnit.getClasses()[0]).getBytes()
+			Class c = classLoader.defineClass(entry.key, bytes, 0, bytes.length)
+			classLoader.resolveClass(c)
+		}
+	}
 
 	def doWithWebDescriptor = { webXml ->
 		def filterMapping = webXml.'filter-mapping'

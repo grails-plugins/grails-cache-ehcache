@@ -1,5 +1,7 @@
 grails.project.work.dir = 'target'
 
+grails.project.dependency.resolver = "maven"
+
 grails.project.repos.grailsCentral.username = System.getenv("GRAILS_CENTRAL_USERNAME")
 grails.project.repos.grailsCentral.password = System.getenv("GRAILS_CENTRAL_PASSWORD")
 
@@ -21,24 +23,21 @@ grails.project.dependency.resolution = {
 			         'javassist', 'jta', 'junit', 'mockito-core', 'servlet-api', 'sizeof-agent',
 			         'slf4j-api', 'slf4j-jdk14', 'xsom'
 		}
-
-		test 'org.codehaus.gpars:gpars:1.0.0', {
-			export = false
-		}
 		test 'org.codehaus.jsr166-mirror:jsr166y:1.7.0', {
 			export = false
 		}
 	}
 
 	plugins {
-		build ':release:2.2.1', ':rest-client-builder:1.0.3', {
+		build ':release:3.0.1', ':rest-client-builder:2.0.3', {
 			export = false
 		}
 
-		compile ":hibernate:$grailsVersion", {
+		compile(":hibernate4:4.3.5.4"){
+			excludes "net.sf.ehcache:ehcache-core"  // remove this when http://jira.grails.org/browse/GPHIB-18 is resolved
 			export = false
 		}
 
-		compile ':cache:1.1.1'
+		compile ':cache:1.1.7'
 	}
 }

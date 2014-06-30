@@ -15,15 +15,21 @@
 package grails.plugin.cache
 
 import grails.plugin.cache.ehcache.GrailsEhcacheCache
-
+import grails.test.mixin.TestMixin;
+import grails.test.mixin.integration.IntegrationTestMixin;
 import net.sf.ehcache.config.CacheConfiguration
 
+import org.junit.After
+import org.junit.Before
 import org.springframework.cache.Cache
+
+import static org.junit.Assert.*
 
 /**
  * @author Burt Beckwith
  */
-class ConfigLoaderTests extends GroovyTestCase {
+@TestMixin(IntegrationTestMixin)
+class ConfigLoaderTests {
 
 	def grailsApplication
 	def grailsCacheConfigLoader
@@ -86,13 +92,13 @@ class ConfigLoaderTests extends GroovyTestCase {
 		assertEquals 1234, configuration.timeToLiveSeconds
 	}
 
-	protected void setUp() {
-		super.setUp()
+	@Before
+	public void setUp() {
 		reset()
 	}
 
-	protected void tearDown() {
-		super.tearDown()
+	@After
+	public void tearDown() {
 		reset()
 	}
 
