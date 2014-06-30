@@ -164,12 +164,21 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 		}
 		ClassLoader classLoader = GrailsApplication.class.classLoader
 		for(Map.Entry<String, String> entry : toLoad){
-			CompilationUnit compilationUnit = new CompilationUnit()
-			compilationUnit.addSource(entry.key, entry.value)
-			compilationUnit.compile(Phases.CLASS_GENERATION)
-			byte[] bytes = ((GroovyClass)compilationUnit.getClasses()[0]).getBytes()
-			Class c = classLoader.defineClass(entry.key, bytes, 0, bytes.length)
-			classLoader.resolveClass(c)
+			boolean alreadyLoaded
+			try{
+				Class.forName(entry.key)
+				alreadyLoaded=true
+			}catch(ClassNotFoundException e){
+				alreadyLoaded=false
+			}
+			if(!alreadyLoaded){
+				CompilationUnit compilationUnit = new CompilationUnit()
+				compilationUnit.addSource(entry.key, entry.value)
+				compilationUnit.compile(Phases.CLASS_GENERATION)
+				byte[] bytes = ((GroovyClass)compilationUnit.getClasses()[0]).getBytes()
+				Class c = classLoader.defineClass(entry.key, bytes, 0, bytes.length)
+				classLoader.resolveClass(c)
+			}
 		}
 	}
 
