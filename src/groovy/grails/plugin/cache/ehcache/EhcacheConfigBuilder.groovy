@@ -89,6 +89,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected Map<String, Object> current
 	protected String diskStore = TEMP_DIR
 	protected int unrecognizedElementDepth = 0
+    protected Map<String, Object> sizeOfPolicy = null
 
 	protected final Logger log = LoggerFactory.getLogger(getClass())
 
@@ -124,6 +125,8 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 	protected static final String TEMP_DIR = 'java.io.tmpdir'
 
+    protected static final List SIZE_OF_POLICY_PARAM_NAMES = ['maxDepth', 'maxDepthExceededBehavior']
+
 	/**
 	 * Convenience method to parse a config closure.
 	 * @param c the closure
@@ -155,6 +158,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			case 'cacheExceptionHandlerFactory':
 				stack.push name
 				return name
+
+            case 'sizeOfPolicy':
+                if (sizeOfPolicy == null) {
+                    sizeOfPolicy = [:]
+                }
+                stack.push name
+                return name
 
 			case 'defaultCache':
 				if (defaultCache == null) {
@@ -232,6 +242,12 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		stack.push name
 
 		switch (level) {
+            case 'sizeOfPolicy':
+                if (name in SIZE_OF_POLICY_PARAM_NAMES) {
+                    sizeOfPolicy[name] = value
+                    return name
+                }
+                break
 			case 'diskStore':
 				switch (name) {
 					case 'path':
@@ -464,6 +480,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		if (diskStore) {
 			xml.append """$LF$INDENT<diskStore path="$diskStore" />$LF"""
 		}
+
+        if (sizeOfPolicy) {
+            xml.append """$LF$INDENT<sizeOfPolicy"""
+            appendProperty xml, 'maxDepth', getValue(sizeOfPolicy, 'maxDepth', 100), ' '
+            appendProperty xml, 'maxDepthExceededBehavior', getValue(sizeOfPolicy, 'maxDepthExceededBehavior', 'abort'), ' '
+            xml.append """/>$LF"""
+        }
 
 		if (defaultCache == null) {
 			defaultCache = DEFAULT_DEFAULT_CACHE
