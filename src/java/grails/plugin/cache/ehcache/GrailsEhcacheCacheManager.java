@@ -133,6 +133,10 @@ public class GrailsEhcacheCacheManager implements GrailsCacheManager, Initializi
 		cacheManager = manager;
 	}
 
+    public CacheManager getUnderlyingCacheManager() {
+        return cacheManager;
+    }
+
 	@Override
 	public void afterPropertiesSet() {
 		Assert.notNull(cacheManager, "A backing EhCache CacheManager is required");

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory
 
 /**
  * @author Burt Beckwith
+ * @author Dan Stieglitz
  */
 class EhcacheConfigBuilder extends BuilderSupport {
 
