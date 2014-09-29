@@ -18,7 +18,7 @@ import grails.plugin.cache.ehcache.GrailsEhcacheCache
 import grails.test.mixin.TestMixin;
 import grails.test.mixin.integration.IntegrationTestMixin;
 import net.sf.ehcache.config.CacheConfiguration
-
+import net.sf.ehcache.config.Configuration
 import org.junit.After
 import org.junit.Before
 import org.springframework.cache.Cache
@@ -69,6 +69,26 @@ class ConfigLoaderTests {
 		assertEquals(['grailsBlocksCache', 'grailsTemplatesCache', 'mycache2', 'the_cache'],
 		             grailsCacheManager.cacheNames.sort())
 	}
+
+    void testSizeOfPolicy() {
+        grailsCacheConfigLoader.reload grailsApplication.mainContext
+
+        // simulate editing Config.groovy
+        grailsApplication.config.grails.cache.config = {
+            sizeOfPolicy {
+                maxDepth 327
+                maxDepthExceededBehavior 'abort'
+            }
+        }
+
+        grailsCacheConfigLoader.reload grailsApplication.mainContext
+
+        Configuration cacheManagerConfiguration = grailsCacheManager.underlyingCacheManager.configuration
+
+        assertNotNull cacheManagerConfiguration.sizeOfPolicyConfiguration
+        assertEquals 327,cacheManagerConfiguration.sizeOfPolicyConfiguration.maxDepth
+        assertTrue cacheManagerConfiguration.sizeOfPolicyConfiguration.maxDepthExceededBehavior.abort
+    }
 
 	void testOrder() {
 
