@@ -596,7 +596,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected void appendCacheManagerPeerProviderFactoryNode(StringBuilder xml, Map data,
 			String delimiter, String className) {
 
-		String properties = joinProperties(data, delimiter, ['className', 'factoryType', 'rmiUrls'])
+		String properties = joinProperties(data, delimiter, ['className', 'factoryType'])
 		appendSimpleNodeWithProperties xml, 'cacheManagerPeerProviderFactory', className, properties, delimiter
 	}
 
