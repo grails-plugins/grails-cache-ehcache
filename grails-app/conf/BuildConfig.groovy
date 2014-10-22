@@ -38,6 +38,6 @@ grails.project.dependency.resolution = {
 			export = false
 		}
 
-		compile ':cache:1.1.7'
+		compile ':cache:1.1.8'
 	}
 }
