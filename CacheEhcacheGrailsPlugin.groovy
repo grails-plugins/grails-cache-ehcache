@@ -126,7 +126,7 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 }
 	'''
 
-	String version = '1.0.4'
+	String version = '1.0.5-SNAPSHOT'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
 	def pluginExcludes = [
