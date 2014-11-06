@@ -236,6 +236,7 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 		}
 
 		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) {
+			cacheManagerName = ehcacheConfig?.cacheManagerName
 			configLocation = ehcacheConfigLocation
 			rebuildable = reloadable
 		}
