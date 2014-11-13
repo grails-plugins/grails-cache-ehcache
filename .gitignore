@@ -15,3 +15,4 @@ target
 plugin.xml
 .DS_Store
 web-app
+/bin/

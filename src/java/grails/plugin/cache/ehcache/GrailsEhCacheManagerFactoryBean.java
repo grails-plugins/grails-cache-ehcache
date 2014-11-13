@@ -94,9 +94,16 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 
 		InputStream inputStream;
 		if (configLocation == null) {
+			
+			if (cacheManagerName == null) {
+				logger.info("No custom cacheManagerName given, using default name 'grails-cache-ehcache'.");
+				// default name to not have multiple unnamed cache managers (because of hibernate)
+				cacheManagerName = "grails-cache-ehcache";
+			}
+			
 			// use dummy configuration for now, will be done for real via rebuild()
 			String dummyXml =
-					"<ehcache name='grails-cache-ehcache' updateCheck='false'>" +
+					"<ehcache name='" + cacheManagerName + "' updateCheck='false'>" +
 					"<defaultCache maxElementsInMemory='1' eternal='false' overflowToDisk='false' timeToLiveSeconds='1234' />" +
 					"</ehcache>";
 			inputStream = new ByteArrayInputStream(dummyXml.getBytes());

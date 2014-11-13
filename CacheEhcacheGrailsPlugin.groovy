@@ -204,6 +204,9 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 		def ehcacheConfig = cacheConfig.ehcache
 		def ehcacheConfigLocation
 		boolean reloadable
+		
+		// customizable name for the cache manager
+		String ehcacheCacheManagerName = ehcacheConfig?.cacheManagerName
 
 		if (ehcacheConfig.reloadable instanceof Boolean) {
 			reloadable = ehcacheConfig.reloadable
@@ -236,6 +239,7 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 		}
 
 		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) {
+			cacheManagerName = ehcacheCacheManagerName
 			configLocation = ehcacheConfigLocation
 			rebuildable = reloadable
 		}
