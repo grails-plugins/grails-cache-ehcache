@@ -65,7 +65,7 @@ dependencies {
 
     console "org.grails:grails-console"
 
-    compile "org.grails.plugins:cache"
+    compile "org.grails.plugins:cache:3.0.0.BUILD-SNAPSHOT"
     compile 'net.sf.ehcache:ehcache:2.9.0'/*, {
         excludes 'bsh', 'btm', 'commons-logging', 'derby', 'dom4j', 'hamcrest-core',
                 'hamcrest-library', 'hibernate', 'hibernate-core', 'hibernate-ehcache',
