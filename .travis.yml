@@ -1,17 +1,15 @@
 language: groovy
 jdk:
-- openjdk6
+- openjdk7
 before_script:
-  # if we run on the same box as previous build, make sure target is clean
-  - rm -rf target
+- rm -rf target
 script: ./travis-build.sh
 env:
   global:
-  - GIT_NAME="Craig Andrews"
-  - GIT_EMAIL="candrews@integralblue.com"
-  # travis encrypt -a env.global 'GRAILS_CENTRAL_USERNAME=myusername'
-  # travis encrypt -a env.global 'GRAILS_CENTRAL_PASSWORD=mypassword'
-  # travis encrypt -a env.global 'GH_TOKEN=token' # get the token from https://github.com/settings/applications
-  - secure: ms4k1Py1fEILvqY3LfDdRrgY9CiKegsUt3dw9gDeZ6Udw+rHJ5If3nu/ByXM8DB72fbp6MiFFxfEMDyeeA7UZyZO6jyBVxMAimZ2MJT2UCnKxKD1xfXQFWqZmHgEilxSuBtsEjWWM2cfQ8i3H7O0VAjprMNYJRmKbPhUn6cF8TI=
-  - secure: Sd35PRqnUV9+WCCbG3bQw8XzFrJRPFxE1KHAkLXCn9u9Psl+A42Z49IvRahVuFS7roN4/0ae+gD/cAC4eX9fXxM7AEUuW4bxDbBlcvqw7oD4I0cYoVQaGIk6KfAhTienWzNmxaRtOlNwMVs3eZbTtQ4lT98NDp1rbU4Cpxh5CbU=
-  - secure: wdFg+zi82axRsGkvWkMhTti7rqudo5ywETf9IMiXN23e4pr85k8xtu1LAdVrwFaLD+LRgvY1BbHVrIY2AnglJzbkyiVNbG4DfUXgwIx4aoAd5lYOLDe6SaQC/+TI2lBctkTHHpP33x/n4DYgMYjcGu5wLjAFx9ABGbOH9Gt+wNI=
+  - GIT_NAME="Jeff Scott Brown"
+  - GIT_EMAIL="jeff@jeffandbetsy.net"
+  - secure: L/oJYBzxbYvOUO2OQzORIc42M8bqWApbpEhZY06dTIBA0LsfSl3QYHQw56bGd9rF9HO19LP0O9HmLquuQxTw4vib8ZQuY43f/PPTTAANx5jLn1KWK1qRpNEuSHwuXXMerBj9COhvkRsmVvUJt+LUoT4g7JRgNlKH/CMixTJzKA4=
+  - secure: AdvYvYrVSW3Z+bEYdmyNNtFiNkiL4mvO2/8Q60+Pu8HlWhG527WVJqbq2bmFlxU+80Y55FKtml5Pqn0a2041xsWgQjMnjg7GkZ5M3JTpykU78VPDXEQTIC7P7+wZrKywd9QL4RLtBMgdCoJ1ATDsXJPWHwXxUzKSZ1/xLl5ugwk=
+  - secure: P4rPywimKcbmvYZHlAsQTzEmKENZW4knWXk8OKmJL+P4O9vsuNVtkmntDdhQCCc8F+w7KByl3Lqxu0FQzlxekysUjlxGZE/a9ruRNYfITn3aCGvq2tLujQfoAnL93mvld6HHXFuLjPOMfniNFeQFv2PMXplxxMoWbORCrHZ8lm0=
+  - secure: QfiPwWAFQrsAYAzCJnId54qzdoRCVb4tzuz6+baZVRFvq2edMlBy95K6WJv5FOWc9RXFm9qtPFdN3BPPchJQOGTTLJNUUEDsmQcJo9uW/MlP97UtmMWtb7+J/MPhupd5x0NVL+DhP4w3cUG0vNlmf9lQxuZ96pIdy+LIy2PxxvA=
+  - secure: m1Y7CWuFAMJVyxPCvHfMGYmoyaiyiquwdR9RklSMcoliq4leXaOul0PtV0BsV6GuISb+VgkGLz40Iw4foiIUnHc+nW7qeOnDPIMQeHkyXRz8k9oXxXf55g/+gi7IrAq2Ga7TbSLAUvz8ZGuXW23/6txcluBuSkx/R8zSB9dG9eg=

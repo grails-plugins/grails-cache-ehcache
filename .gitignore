@@ -1,18 +1,4 @@
-# Eclipse
-.classpath
-.project
-.settings/
-target-eclipse/
-
-# Intellij
-.idea/
+.idea
 *.iml
-*.iws
-
-target
-*.log
-*.zip
-plugin.xml
-.DS_Store
-web-app
-/bin/
+build
+.gradle
