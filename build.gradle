@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        grailsVersion = project.grailsVersion
+        grailsVersion = '3.0.0.BUILD-SNAPSHOT'
     }
     repositories {
         mavenLocal()
