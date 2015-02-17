@@ -6,7 +6,6 @@ import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
 import grails.plugin.cache.web.filter.ehcache.EhcachePageFragmentCachingFilter
 import grails.plugins.Plugin
 import net.sf.ehcache.management.ManagementService
-import org.springframework.jmx.support.MBeanServerFactoryBean
 
 class CacheEhcacheGrailsPlugin extends Plugin {
 
@@ -95,14 +94,14 @@ An Ehcache-based implementation of the Cache plugin.
                 expressionEvaluator = ref('webExpressionEvaluator')
             }
 
-            grailsCacheMbeanServer(MBeanServerFactoryBean) {
-                locateExistingServerIfPossible = true
-            }
+//            grailsCacheMbeanServer(MBeanServerFactoryBean) {
+//                locateExistingServerIfPossible = true
+//            }
 
             ehCacheManagementService(ManagementService) { bean ->
                 bean.initMethod = 'init'
                 bean.destroyMethod = 'dispose'
-                bean.constructorArgs = [ehcacheCacheManager, grailsCacheMbeanServer, true, true, true, true, true]
+                bean.constructorArgs = [ehcacheCacheManager, ref('mbeanServer'), true, true, true, true, true]
             }
         }
     }
