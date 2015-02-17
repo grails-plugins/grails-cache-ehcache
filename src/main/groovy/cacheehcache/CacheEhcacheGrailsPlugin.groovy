@@ -55,7 +55,7 @@ An Ehcache-based implementation of the Cache plugin.
                 // use the specified location
                 ehcacheConfigLocation = ehcacheConfig.ehcacheXmlLocation
                 log.info "Using Ehcache configuration file $ehcacheConfigLocation"
-            } else if (cacheConfig.config instanceof Closure || application.cacheConfigClasses) {
+            } else if (cacheConfig.config instanceof Closure || grailsApplication.cacheConfigClasses) {
                 // leave the location null to indicate that the real configuration will
                 // happen in doWithApplicationContext (from the core plugin, using this
                 // plugin's grailsCacheConfigLoader)
