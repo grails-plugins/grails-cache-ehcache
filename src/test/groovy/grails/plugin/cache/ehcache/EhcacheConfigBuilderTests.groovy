@@ -55,7 +55,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute 'on', 'monitoring'
 		assertAttribute 'false', 'dynamicConfig'
 		assertAttribute '30', 'defaultTransactionTimeoutInSeconds'
-		assertAttribute '10', 'maxBytesLocalHeap'
+//		assertAttribute '10', 'maxBytesLocalHeap'
 		assertAttribute '20', 'maxBytesLocalOffHeap'
 		assertAttribute '30', 'maxBytesLocalDisk'
 	}
