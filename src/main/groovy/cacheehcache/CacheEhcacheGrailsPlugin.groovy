@@ -35,6 +35,8 @@ An Ehcache-based implementation of the Cache plugin.
 
     def scm = [ url: "https://github.com/grails3-plugins/cache-ehcache/" ]
 
+    def loadAfter = ['cache']
+
     Closure doWithSpring() {
         { ->
             def cacheConfig = grailsApplication.config.grails?.cache
