@@ -471,7 +471,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		appendProperty xml, 'monitoring', getValue(provider, 'monitoring', 'autodetect'), ' '
 		appendProperty xml, 'updateCheck', getValue(provider, 'updateCheck', false), ' '
 		appendNonZeroProperty xml, 'maxBytesLocalDisk', getValue(provider, 'maxBytesLocalDisk', 0), ' '
-		appendNonZeroProperty xml, 'maxBytesLocalHeap', maxBytesLocalHeap, ' '
+//		appendNonZeroProperty xml, 'maxBytesLocalHeap', maxBytesLocalHeap, ' '
 		appendNonZeroProperty xml, 'maxBytesLocalOffHeap', getValue(provider, 'maxBytesLocalOffHeap', 0), ' '
 		appendNonZeroProperty xml, 'maxEntriesLocalHeap', getValue(provider, 'maxEntriesLocalHeap', 10000), ' '
 		appendProperty xml, 'name', provider.name ?: 'grails-cache-ehcache', ' '
@@ -545,7 +545,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		List cacheExtensionFactoryNames = data.cacheExtensionFactoryName
 
 		if (!maxBytesLocalHeapSet && !data.maxBytesLocalHeap && !data.maxElementsInMemory) {
-			data.maxBytesLocalHeap = '10m'
+//			data.maxBytesLocalHeap = '10m'
 		}
 
 		data.each { key, value ->
