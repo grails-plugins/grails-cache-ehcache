@@ -35,7 +35,7 @@ import org.springframework.jmx.support.MBeanServerFactoryBean
 class CacheEhcacheGrailsPlugin {
 
 	private final Logger log = LoggerFactory.getLogger('grails.plugin.cache.CacheEhcacheGrailsPlugin')
-	
+
 	private static final String BEAN_EHCACHE_REGION_FACTORY = '''
 package grails.plugin.cache.ehcache.hibernate;
 
@@ -104,11 +104,11 @@ import org.hibernate.cfg.Settings;
  * Configure in DataSource.groovy: hibernate.cache.region.factory_class = 'grails.plugin.cache.ehcache.hibernate.BeanEhcacheRegionFactory4
  *
  * Note that most of this code is copied from {@link org.hibernate.cache.DelegatingRegionFactory}, which cannot be extended in this case as its constructor is package-scoped (and this class is not in the same package).
- * 
+ *
  * @author Craig Andrews
  */
 public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
-	
+
 	public BeanEhcacheRegionFactory4(){
 		super();
 	}
@@ -126,7 +126,7 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 }
 	'''
 
-	String version = '1.0.5-SNAPSHOT'
+	String version = '1.0.5'
 	String grailsVersion = '2.0 > *'
 	def loadAfter = ['cache']
 	def pluginExcludes = [
@@ -146,7 +146,7 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPCACHEEHCACHE']
 	def scm = [url: 'https://github.com/grails-plugins/grails-cache-ehcache']
-	
+
 	public CacheEhcacheGrailsPlugin(){
 		// conditionally load the Hibernate 3 or Hibernate 4 classes
 		Map<String, String> toLoad = new HashMap<String,String>(2)
@@ -204,7 +204,7 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 		def ehcacheConfig = cacheConfig.ehcache
 		def ehcacheConfigLocation
 		boolean reloadable
-		
+
 		// customizable name for the cache manager
 		String ehcacheCacheManagerName = ehcacheConfig?.cacheManagerName
 
