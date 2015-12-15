@@ -14,27 +14,10 @@
  */
 package grails.plugin.cache.ehcache;
 
-import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.DiskStorePathManager;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.Status;
+import net.sf.ehcache.*;
 import net.sf.ehcache.bootstrap.BootstrapCacheLoader;
 import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.event.CacheManagerEventListener;
 import net.sf.ehcache.event.RegisteredEventListeners;
 import net.sf.ehcache.exceptionhandler.CacheExceptionHandler;
 import net.sf.ehcache.extension.CacheExtension;
@@ -47,7 +30,6 @@ import net.sf.ehcache.terracotta.TerracottaNotRunningException;
 import net.sf.ehcache.transaction.manager.TransactionManagerLookup;
 import net.sf.ehcache.writer.CacheWriter;
 import net.sf.ehcache.writer.CacheWriterManager;
-import net.sf.ehcache.event.CacheManagerEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -55,6 +37,19 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.ReflectionUtils;
+
+import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Based on org.springframework.cache.ehcache.EhCacheManagerFactoryBean.
@@ -142,7 +137,7 @@ public class GrailsEhCacheManagerFactoryBean implements FactoryBean<CacheManager
 
 	/**
 	 * Set the name of the EHCache CacheManager (if a specific name is desired).
-	 * @see net.sf.ehcache.CacheManager#setName(String)
+	 * @see net.sf.ehcache.CacheManager #setName(String)
 	 */
 	public void setCacheManagerName(String name) {
 		cacheManagerName = name;
