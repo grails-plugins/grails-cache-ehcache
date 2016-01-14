@@ -66,7 +66,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected static final List<String> CACHE_NONPROPERTY_NAMES = [
 		'name', 'domain', 'cacheEventListenerFactoryName',
 		'bootstrapCacheLoaderFactoryName', 'cacheExceptionHandlerFactoryName',
-		'cacheLoaderFactoryName', 'cacheExtensionFactoryName']
+		'cacheLoaderFactoryName', 'cacheExtensionFactoryName', 'cacheDecoratorFactoryName']
 
 	protected List<String> stack = []
 	protected List<Map<String, Object>> caches = []
@@ -87,6 +87,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected List<Map<String, Object>> cacheLoaderFactories = []
 	protected List<Map<String, Object>> cacheExtensionFactories = []
 	protected List<Map<String, Object>> cacheManagerPeerProviderFactories = []
+    protected List<Map<String, Object>> cacheDecoratorFactories = []
 	protected Map<String, Object> current
 	protected String diskStore = TEMP_DIR
 	protected int unrecognizedElementDepth = 0
@@ -118,7 +119,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 	protected static final List FACTORY_REF_NAMES = [
 		'cacheEventListenerFactoryName', 'bootstrapCacheLoaderFactoryName', 'cacheExceptionHandlerFactoryName',
-		'cacheLoaderFactoryName', 'cacheExtensionFactoryName']
+		'cacheLoaderFactoryName', 'cacheExtensionFactoryName', 'cacheDecoratorFactoryName']
 
 	protected static final List PROVIDER_NAMES = [
 		'updateCheck', 'monitoring', 'dynamicConfig', 'name', 'defaultTransactionTimeoutInSeconds',
@@ -223,6 +224,13 @@ class EhcacheConfigBuilder extends BuilderSupport {
 				cacheExtensionFactories << current
 				stack.push name
 				return name
+                
+            case 'cacheDecoratorFactory':
+                current = [:]
+                cacheDecoratorFactories << current
+                stack.push name
+                return name
+                
 		}
 
 		unrecognizedElementDepth++
@@ -384,6 +392,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 			case 'cacheEventListenerFactory':
 			case 'cacheLoaderFactory':
 			case 'cacheExtensionFactory':
+            case 'cacheDecoratorFactory':
 				// allow all properties for forward compatability
 				current[name] = value
 				return name
@@ -459,6 +468,9 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 		Map cacheExtensionFactoriesXml = generateChildElementXmlMap(cacheExtensionFactories,
 				env, 'cacheExtensionFactory')
+        
+        Map cacheDecoratorFactoriesXml = generateChildElementXmlMap(cacheDecoratorFactories,
+            env, 'cacheDecoratorFactory')
 
 		StringBuilder xml = new StringBuilder()
 		xml.append '<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="ehcache.xsd"'
@@ -495,7 +507,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 		appendCache xml, 'defaultCache', defaultCache, env, cacheEventListenerFactoriesXml,
 			bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
-			cacheLoaderFactoriesXml, cacheExtensionFactoriesXml, maxBytesLocalHeapSet
+			cacheLoaderFactoriesXml, cacheExtensionFactoriesXml, cacheDecoratorFactoriesXml, maxBytesLocalHeapSet
 
 		for (data in cacheManagerPeerProviderFactories) {
 			appendCacheManagerPeerProviderFactory xml, data, env
@@ -508,7 +520,8 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		for (data in caches) {
 			appendCache xml, 'cache', data, env, cacheEventListenerFactoriesXml,
 				bootstrapCacheLoaderFactoriesXml, cacheExceptionHandlerFactoriesXml,
-				cacheLoaderFactoriesXml, cacheExtensionFactoriesXml, maxBytesLocalHeapSet
+				cacheLoaderFactoriesXml, cacheExtensionFactoriesXml, cacheDecoratorFactoriesXml,
+                 maxBytesLocalHeapSet
 		}
 
 		xml.append(LF).append('</ehcache>').append LF
@@ -519,7 +532,8 @@ class EhcacheConfigBuilder extends BuilderSupport {
 	protected void appendCache(StringBuilder xml, String type, Map data, String env,
 			Map cacheEventListenerFactoriesXml, Map bootstrapCacheLoaderFactoriesXml,
 			Map cacheExceptionHandlerFactoriesXml, Map cacheLoaderFactoriesXml,
-			Map cacheExtensionFactoriesXml, boolean maxBytesLocalHeapSet) {
+			Map cacheExtensionFactoriesXml, Map cacheDecoratorFactoriesXml,
+            boolean maxBytesLocalHeapSet) {
 
 		if (data.domain) {
 			// collection
@@ -543,6 +557,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		List cacheExceptionHandlerFactoryNames = data.cacheExceptionHandlerFactoryName
 		List cacheLoaderFactoryNames = data.cacheLoaderFactoryName
 		List cacheExtensionFactoryNames = data.cacheExtensionFactoryName
+        List cacheDecoratorFactoryNames = data.cacheDecoratorFactoryName
 
 		if (!maxBytesLocalHeapSet && !data.maxBytesLocalHeap && !data.maxElementsInMemory) {
 			data.maxBytesLocalHeap = '10m'
@@ -562,6 +577,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 		appendFactoryXmls children, cacheExceptionHandlerFactoryNames, cacheExceptionHandlerFactoriesXml
 		appendFactoryXmls children, cacheLoaderFactoryNames, cacheLoaderFactoriesXml
 		appendFactoryXmls children, cacheExtensionFactoryNames, cacheExtensionFactoriesXml
+        appendFactoryXmls children, cacheDecoratorFactoryNames, cacheDecoratorFactoriesXml
 
 		if (children) {
 			xml.append '>'
@@ -774,6 +790,7 @@ class EhcacheConfigBuilder extends BuilderSupport {
 
 		mergeFactories cacheLoaderFactories
 		mergeFactories cacheExtensionFactories
+        mergeFactories cacheDecoratorFactories
 	}
 
 	protected void setDefaults() {
