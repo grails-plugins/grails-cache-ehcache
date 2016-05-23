@@ -33,6 +33,8 @@ An Ehcache-based implementation of the Cache plugin.
 
     def developers = [ [ name: "Burt Beckwith", email: "burt@burtbeckwith.com" ]]
 
+    def issueManagement = [system: 'Github', url: 'https://github.com/grails-plugins/grails-cache-ehcache/issues']
+
     def scm = [ url: "https://github.com/grails-plugins/grails-cache-ehcache/" ]
 
     def loadAfter = ['cache']
