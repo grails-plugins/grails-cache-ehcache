@@ -32,17 +32,6 @@ public class EhcachePageFragmentCachingFilter extends PageFragmentCachingFilter 
 
 	protected static final long ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
 
-//	@Override
-//	protected void replaceCacheWithDecoratedCache(final Cache cache, final BlockingCache blocking) {
-//		getNativeCacheManager().replaceCacheWithDecoratedCache(
-//				(Ehcache)cache.getNativeCache(), (Ehcache)blocking.getNativeCache());
-//	}
-
-//	@Override
-//	protected BlockingCache createBlockingCache(final Cache cache) {
-//		return new EhcacheBlockingCache((Ehcache)cache.getNativeCache());
-//	}
-
 	@Override
 	protected int getTimeToLive(final ValueWrapper wrapper) {
 		if (wrapper instanceof GrailsValueWrapper) {
