@@ -10,7 +10,7 @@ import net.sf.ehcache.management.ManagementService
 class CacheEhcacheGrailsPlugin extends Plugin {
 
    // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "3.0.0.M1 > *"
+    def grailsVersion = "3.0.0 > *"
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp"
@@ -33,7 +33,7 @@ An Ehcache-based implementation of the Cache plugin.
 
     def developers = [ [ name: "Burt Beckwith", email: "burt@burtbeckwith.com" ]]
 
-    def scm = [ url: "https://github.com/grails3-plugins/cache-ehcache/" ]
+    def scm = [ url: "https://github.com/grails-plugins/grails-cache-ehcache" ]
 
     def loadAfter = ['cache']
 
