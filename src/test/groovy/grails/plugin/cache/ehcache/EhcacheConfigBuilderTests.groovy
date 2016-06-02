@@ -14,17 +14,20 @@
  */
 package grails.plugin.cache.ehcache
 
+import static org.junit.Assert.assertEquals
 import grails.util.Environment
+import org.junit.Test
 
 /**
  * @author Burt Beckwith
  */
-class EhcacheConfigBuilderTests extends GroovyTestCase {
+class EhcacheConfigBuilderTests {
 
 	protected EhcacheConfigBuilder builder
 	protected String xml
 	protected root
 
+	@Test
 	void testTopLevelAttributes() {
 
 		parse {}
@@ -60,6 +63,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '30', 'maxBytesLocalDisk'
 	}
 
+	@Test
 	void testDiskStore() {
 
 		parse {
@@ -106,6 +110,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute 'user.dir', 'path', diskStores[0]
 	}
 
+	@Test
 	void testDefaultCache() {
 
 		parse {
@@ -136,6 +141,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute 'LRU', 'memoryStoreEvictionPolicy', defaultCache
 	}
 
+	@Test
 	void testCache() {
 
 		parse {
@@ -158,6 +164,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 
+	@Test
 	void testDomain() {
 
 		parse {
@@ -180,6 +187,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 
+	@Test
 	void testDomainWithDefaults() {
 
 		parse {
@@ -206,6 +214,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 
+	@Test
 	void testCollection() {
 
 		parse {
@@ -244,6 +253,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '10000', 'maxElementsOnDisk', collection
 	}
 
+	@Test
 	void testInnerCollection() {
 
 		parse {
@@ -284,6 +294,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '0', 'maxElementsOnDisk', collection
 	}
 
+	@Test
 	void testHibernate() {
 
 		parse {
@@ -310,6 +321,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '0', 'maxElementsOnDisk', updateTimestamps
 	}
 
+	@Test
 	void testEnvironment() {
 
 		def config = {
@@ -363,6 +375,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute 'com.foo.Book', 'name', caches[1]
 	}
 
+	@Test
 	void testDistributed() {
 
 		Environment.metaClass.getName = { -> 'production' }
@@ -456,6 +469,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertEquals 0, cacheEventListenerFactoryNodes.size()
 	}
 
+	@Test
 	void testLenient() {
 
 		parse {
@@ -483,6 +497,7 @@ class EhcacheConfigBuilderTests extends GroovyTestCase {
 		assertAttribute '10000000', 'maxElementsOnDisk', cache
 	}
 
+	@Test
 	void testOverrides() {
 
 		parse {
