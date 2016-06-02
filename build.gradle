@@ -63,14 +63,8 @@ dependencies {
 
     console "org.grails:grails-console"
 
-    compile "org.grails.plugins:cache:3.0.1"
-    compile 'net.sf.ehcache:ehcache:2.10.1'/*, {
-        excludes 'bsh', 'btm', 'commons-logging', 'derby', 'dom4j', 'hamcrest-core',
-                'hamcrest-library', 'hibernate', 'hibernate-core', 'hibernate-ehcache',
-                'javassist', 'jta', 'junit', 'mockito-core', 'servlet-api', 'sizeof-agent',
-                'slf4j-api', 'slf4j-jdk14', 'xsom'
-    }*/
-
+    compile "org.grails.plugins:cache:3.0.2"
+    compile 'net.sf.ehcache:ehcache:2.10.2'
 }
 
 eclipse {
