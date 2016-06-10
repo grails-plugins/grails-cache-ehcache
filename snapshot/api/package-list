@@ -1,0 +1,2 @@
+grails.plugin.cache.ehcache
+grails.plugin.cache.web.filter.ehcache
