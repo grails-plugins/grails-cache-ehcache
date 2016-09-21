@@ -3,7 +3,6 @@ package cacheehcache
 import grails.plugin.cache.ehcache.EhcacheConfigLoader
 import grails.plugin.cache.ehcache.GrailsEhCacheManagerFactoryBean
 import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
-import grails.plugin.cache.web.filter.ehcache.EhcachePageFragmentCachingFilter
 import grails.plugins.Plugin
 import net.sf.ehcache.management.ManagementService
 
@@ -86,14 +85,6 @@ An Ehcache-based implementation of the Cache plugin.
 
             grailsCacheManager(GrailsEhcacheCacheManager) {
                 cacheManager = ref('ehcacheCacheManager')
-            }
-
-            grailsCacheFilter(EhcachePageFragmentCachingFilter) {
-                cacheManager = ref('grailsCacheManager')
-                nativeCacheManager = ref('ehcacheCacheManager')
-                cacheOperationSource = ref('cacheOperationSource')
-                keyGenerator = ref('webCacheKeyGenerator')
-                expressionEvaluator = ref('webExpressionEvaluator')
             }
 
 //            grailsCacheMbeanServer(MBeanServerFactoryBean) {
