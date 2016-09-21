@@ -16,7 +16,7 @@ plugins {
     id "com.jfrog.bintray" version "1.2"
 }
 
-version "2.0.0.BUILD-SNAPSHOT"
+version "3.0.0.BUILD-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin: 'maven-publish'
@@ -64,7 +64,7 @@ dependencies {
 
     console "org.grails:grails-console"
 
-    compile "org.grails.plugins:cache:3.0.2"
+    compile "org.grails.plugins:cache:4.0.0.BUILD-SNAPSHOT"
     compile 'net.sf.ehcache:ehcache:2.10.2'
 }
 
