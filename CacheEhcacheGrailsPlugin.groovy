@@ -238,10 +238,11 @@ public class BeanEhcacheRegionFactory4 extends EhCacheRegionFactory {
 			}
 		}
 
-		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) {
+		ehcacheCacheManager(GrailsEhCacheManagerFactoryBean) { bean ->
 			cacheManagerName = ehcacheCacheManagerName
 			configLocation = ehcacheConfigLocation
 			rebuildable = reloadable
+			bean.destroyMethod = 'destroy'
 		}
 
 		grailsCacheConfigLoader(EhcacheConfigLoader) {
