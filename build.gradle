@@ -65,7 +65,7 @@ dependencies {
     console "org.grails:grails-console"
 
     compile "org.grails.plugins:cache:4.0.0.BUILD-SNAPSHOT"
-    compile 'net.sf.ehcache:ehcache:2.10.2'
+    compile 'org.ehcache:ehcache:3.3.1'
 }
 
 eclipse {

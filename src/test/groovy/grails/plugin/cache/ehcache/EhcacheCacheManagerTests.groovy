@@ -15,7 +15,7 @@
 package grails.plugin.cache.ehcache
 
 import groovyx.gpars.GParsPool
-import net.sf.ehcache.CacheManager
+import org.ehcache.config.builders.CacheManagerBuilder
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -29,12 +29,12 @@ class EhcacheCacheManagerTests {
 
 	@Before
 	public void setUp() {
-		manager.cacheManager = CacheManager.create()
+		manager.cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true)
 	}
 
 	@After
 	public void after() {
-		manager.cacheManager.shutdown()
+		manager.destroy()
 	}
 
 	void testCacheCreationSerialAccess() {
