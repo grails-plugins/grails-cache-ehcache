@@ -84,7 +84,9 @@ class GrailsEhcacheCache<K, V> implements GrailsCache {
 	@SuppressWarnings("unchecked")
 	Collection<Object> getAllKeys() {
 		Set<K> keys = []
-		getNativeCache().iterator().forEachRemaining { Cache.Entry<K,V> entry ->
+		Iterator<Cache.Entry<K,V>> entries = getNativeCache().iterator()
+		while(entries.hasNext()) {
+			Cache.Entry<K,V> entry = entries.next()
 			keys.add(entry.key)
 		}
 		keys
