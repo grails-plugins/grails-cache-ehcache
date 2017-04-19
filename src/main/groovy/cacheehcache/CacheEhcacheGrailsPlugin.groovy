@@ -37,6 +37,7 @@ An Ehcache-based implementation of the Cache plugin.
     Closure doWithSpring() {
         { ->
             String ehcacheXmlLocation = config.getProperty('grails.cache.ehcache.ehcacheXmlLocation', String, 'classpath:ehcache.xml')
+            Long timeout = config.getProperty('grails.cache.ehcache.lockTimeout', Long, 200)
 
             log.info "Attempting to use Ehcache configuration file $ehcacheXmlLocation"
 
@@ -44,6 +45,7 @@ An Ehcache-based implementation of the Cache plugin.
 
             grailsCacheManager(GrailsEhcacheCacheManager) {
                 configuration = ref('ehcacheConfiguration')
+                lockTimeout = timeout
             }
 
         }

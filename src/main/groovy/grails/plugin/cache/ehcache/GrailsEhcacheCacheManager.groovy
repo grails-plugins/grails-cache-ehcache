@@ -56,6 +56,8 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
 
 	private final Lock lock = new ReentrantLock()
 
+    Long lockTimeout = 200
+
     @Override
 	Cache getCache(final String name) {
 		Cache cache = cacheMap.get(name)
@@ -72,7 +74,7 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
 
 	protected Cache getOrCreateCache(String name) throws InterruptedException {
 		// Ensure we don't have parallel access to cache creation which can lead to 'cache already exists' exceptions
-		if (!lock.tryLock(200, TimeUnit.MILLISECONDS)) {
+		if (!lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS)) {
 			throw new CacheException("Failed to get lock for " + name + " cache creation")
 		}
 
