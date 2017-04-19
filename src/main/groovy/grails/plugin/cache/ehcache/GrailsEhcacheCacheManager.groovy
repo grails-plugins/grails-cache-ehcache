@@ -15,7 +15,6 @@
 package grails.plugin.cache.ehcache
 
 import grails.plugin.cache.CacheException
-import grails.plugin.cache.GrailsCacheManager
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.ehcache.CacheManager
@@ -25,6 +24,7 @@ import org.ehcache.config.Configuration
 import org.ehcache.config.builders.CacheConfigurationBuilder
 import org.ehcache.config.builders.CacheManagerBuilder
 import org.ehcache.config.builders.ResourcePoolsBuilder
+import org.grails.plugin.cache.GrailsCacheManager
 import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
