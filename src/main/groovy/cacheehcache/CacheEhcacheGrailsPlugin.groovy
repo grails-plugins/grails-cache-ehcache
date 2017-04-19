@@ -8,12 +8,7 @@ class CacheEhcacheGrailsPlugin extends Plugin {
 
    // the version or versions of Grails the plugin is designed for
     def grailsVersion = "3.0.0 > *"
-    // resources that are excluded from plugin packaging
-    def pluginExcludes = [
-        "grails-app/views/error.gsp"
-    ]
 
-    def version = '2.0.0.BUILD-SNAPSHOT'
 
     def title = "Cache Ehcache" // Headline display name of the plugin
     def author = "Jeff Brown"
@@ -30,7 +25,9 @@ An Ehcache-based implementation of the Cache plugin.
 
     def developers = [ [ name: "Burt Beckwith", email: "burt@burtbeckwith.com" ]]
 
-    def scm = [ url: "https://github.com/grails-plugins/grails-cache-ehcache" ]
+    def issueManagement = [system: 'Github', url: 'https://github.com/grails-plugins/grails-cache-ehcache/issues']
+
+    def scm = [ url: "https://github.com/grails-plugins/grails-cache-ehcache/" ]
 
     def loadAfter = ['cache']
 
@@ -38,8 +35,6 @@ An Ehcache-based implementation of the Cache plugin.
         { ->
             String ehcacheXmlLocation = config.getProperty('grails.cache.ehcache.ehcacheXmlLocation', String, 'classpath:ehcache.xml')
             Long timeout = config.getProperty('grails.cache.ehcache.lockTimeout', Long, 200)
-
-            log.info "Attempting to use Ehcache configuration file $ehcacheXmlLocation"
 
             ehcacheConfiguration(DefaultXmlConfiguration, ehcacheXmlLocation)
 

@@ -25,7 +25,6 @@ import org.ehcache.config.Configuration
 import org.ehcache.config.builders.CacheConfigurationBuilder
 import org.ehcache.config.builders.CacheManagerBuilder
 import org.ehcache.config.builders.ResourcePoolsBuilder
-import org.ehcache.config.builders.ConfigurationBuilder
 import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
