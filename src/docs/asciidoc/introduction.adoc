@@ -1,0 +1,5 @@
+== Introduction
+
+The Grails Cache Ehcache plugin extends the link:http://grails.org/plugin/cache[Cache] plugin and uses link:http://ehcache.org/[Ehcache] as the storage provider for cached content. It replaces the core plugin's `grailsCacheManager` bean with one that uses an Ehcache backend.
+
+Version 3.0.0 of this plugin is a complete rewrite from previous versions. The version of Ehcache has been upgraded to version 3. If you are upgrading from a previous version of this plugin, it will require a change in your configuration. The configuration XML from Ehcache 2 is not compatible with version 3. Configuration for caches via *Config.groovy files or the standard Grails 3 configuration files is no longer supported. See the sections on link:configuration/index.html[configuration] and link:customization/index.html[customization] for more information.

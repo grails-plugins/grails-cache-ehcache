@@ -1,0 +1,26 @@
+== Configuration
+
+This configuration options this plugin provides will be under the `grails.cache.ehcache` key.
+
+[source,groovy]
+----
+grails{
+   cache {
+      ehcache {
+         ehcacheXmlLocation = 'classpath:ehcache.xml'
+         lockTimeout = 200 // In milliseconds
+      }
+   }
+}
+----
+
+* `ehcacheXmlLocation` optionally specifies where the XML configuration file can be found.
+* `lockTimeout` allows you to specify the maximum amount of time the cache manager will wait to acquire a lock on the cache.
+
+IMPORTANT: If you are using hibernate-ehcache, it will by default use the ehcache.xml file on your classpath. Since hibernate-ehcache is still using Ehcache 2, it will throw an error if the XML is designed to be used by Ehcache 3. It is recommended to name the file something different that won't be picked up automatically by hibernate-ehcache.
+
+=== Caches
+
+By default, the only provided configuration strategy supports reading an XML file to configure Ehcache. Set the `ehcacheXmlLocation` setting above to provide a file to be passed to Ehcache. See the section in the Ehcache user guide on creating an link:http://www.ehcache.org/documentation/3.3/xml.html[XML file].
+
+To configure Ehcache via their configuration builder, or any other means, see the section on link:customization.html[customization].

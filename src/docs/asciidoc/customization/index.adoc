@@ -1,0 +1,11 @@
+== Customization
+
+=== Configuration
+
+To configure Ehcache yourself, define a bean called `ehcacheConfiguration` that implements link:api/grails/plugin/cache/ehcache/EhcacheConfiguration.html[EhcacheConfiguration]. The configuration returned from `getConfiguration` will be passed to the cache manager. See the section in the Ehcache documentation on link:http://www.ehcache.org/documentation/3.3/getting-started.html#configuring-with-java[programmatic configuration] for more information.
+
+=== Cache Manager
+
+To customize how the Ehcache manager gets created, define a bean called `grailsCacheManager` that extends link:api/grails/plugin/cache/ehcache/GrailsEhcacheCacheManager.html[GrailsEhcacheCacheManager]. You can override the `createDefaultManager` method to return an Ehcache manager in any way you like.
+
+Ehcache 3 requires a key type and a value type when creating a cache. If a cache is specified in your code that is not specifically configured, the key and value type will be `Object`. To change this behavior or to further configure the default cache, extend the `grailsCacheManager` as explained above and override the `createDefaultCache` method.

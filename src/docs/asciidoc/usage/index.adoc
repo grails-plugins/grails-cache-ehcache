@@ -1,0 +1,3 @@
+== Usage
+
+Although this plugin uses a different backing store than the core plugin, its usage is the same. You annotate service methods, taglib closures, etc with the three caching annotations. See the link:http://grails-plugins.github.com/grails-cache[core plugin docs] for general usage information.

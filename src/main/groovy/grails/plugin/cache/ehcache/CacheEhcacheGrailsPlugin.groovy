@@ -1,4 +1,4 @@
-package cacheehcache
+package grails.plugin.cache.ehcache
 
 import grails.plugin.cache.ehcache.DefaultXmlConfiguration
 import grails.plugin.cache.ehcache.GrailsEhcacheCacheManager
@@ -11,8 +11,6 @@ class CacheEhcacheGrailsPlugin extends Plugin {
 
 
     def title = "Cache Ehcache" // Headline display name of the plugin
-    def author = "Jeff Brown"
-    def authorEmail = "jeff@jeffandbetsy.net"
     def description = '''\
 An Ehcache-based implementation of the Cache plugin.
 '''
@@ -23,13 +21,15 @@ An Ehcache-based implementation of the Cache plugin.
 
     def license = "APACHE"
 
-    def developers = [ [ name: "Burt Beckwith", email: "burt@burtbeckwith.com" ]]
+    def developers = [ [ name: "James Kleeh", email: "james.kleeh@gmail.com" ]]
 
     def issueManagement = [system: 'Github', url: 'https://github.com/grails-plugins/grails-cache-ehcache/issues']
 
     def scm = [ url: "https://github.com/grails-plugins/grails-cache-ehcache/" ]
 
     def loadAfter = ['cache']
+
+    def dependsOn = [cache: "4.0.0.BUILD-SNAPSHOT > *"]
 
     Closure doWithSpring() {
         { ->

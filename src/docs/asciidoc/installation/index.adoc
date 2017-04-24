@@ -1,0 +1,12 @@
+== Installation
+
+To start using this plugin, add it to your `build.gradle` like the example below.
+
+[source,groovy,subs="attributes",indent=1]
+.build.gradle
+----
+dependencies {
+    ...
+    compile "{groupId}:{artifactId}:{version}"
+}
+----
