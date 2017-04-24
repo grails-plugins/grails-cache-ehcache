@@ -19,6 +19,8 @@ import org.springframework.cache.support.SimpleValueWrapper
 import grails.plugin.cache.GrailsCache
 import org.ehcache.Cache
 
+import java.util.concurrent.Callable
+
 /**
  * Extends the default implementation to return GrailsValueWrapper instances instead of
  * SimpleValueWrapper, to include the Ehcache Element instance.
@@ -59,6 +61,11 @@ class GrailsEhcacheCache<K, V> implements GrailsCache {
 			throw new IllegalStateException("Cached value is not of required type [" + type.getName() + "]: " + value)
 		}
 		(T) value
+	}
+
+	@Override
+	<T> T get(Object key, Callable<T> valueLoader) {
+		throw new UnsupportedOperationException()
 	}
 
 	@Override
