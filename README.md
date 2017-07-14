@@ -7,7 +7,7 @@ Makes Ehcache the cache implementation for the [Grails Cache Plugin](https://git
 
 ## Grails 3
 
-See https://plugins.grails.org/plugin/grails/cache-ehcache
+See https://plugins.grails.org/plugin/grails/cache-ehcache and [Documentation](http://grails-plugins.github.io/grails-cache-ehcache/latest/)
 
 ## Grails 2
 
