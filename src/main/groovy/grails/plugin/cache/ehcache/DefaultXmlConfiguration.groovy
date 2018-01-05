@@ -17,7 +17,7 @@ class DefaultXmlConfiguration implements EhcacheConfiguration {
         def resolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader())
         Resource resource = resolver.getResource(location)
         log.debug("Attempting to search for ehcache xml configuration at $location")
-        if (resource != null && resource.exists()) {
+        if (resource && resource.exists()) {
             log.debug("Configuration found at $location")
             configuration = new XmlConfiguration(resource.getURL())
         } else {
