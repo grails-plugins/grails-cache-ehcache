@@ -14,7 +14,6 @@
  */
 package grails.plugin.cache.ehcache
 
-import grails.plugin.cache.CacheException
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.ehcache.CacheManager
@@ -24,7 +23,8 @@ import org.ehcache.config.Configuration
 import org.ehcache.config.builders.CacheConfigurationBuilder
 import org.ehcache.config.builders.CacheManagerBuilder
 import org.ehcache.config.builders.ResourcePoolsBuilder
-import org.grails.plugin.cache.GrailsCacheManager
+import grails.plugin.cache.GrailsCacheManager
+import org.grails.datastore.mapping.cache.exception.CacheException
 import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -71,6 +71,7 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
 		return cache
 	}
 
+	@SuppressWarnings("unchecked")
 	protected Cache getOrCreateCache(String name) throws InterruptedException {
 		// Ensure we don't have parallel access to cache creation which can lead to 'cache already exists' exceptions
 		if (!lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS)) {
@@ -82,7 +83,9 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
             org.ehcache.Cache cache
             if (configurations.containsKey(name)) {
                 CacheConfiguration configuration = configurations.get(name)
-                cache = cacheManager.getCache(name, configuration.keyType, configuration.valueType)
+				Class<Object> keyClass = configuration.keyType as Class<Object>
+				Class<Object> configClass = configuration.valueType as Class<Object>
+                cache = cacheManager.getCache(name, keyClass, configClass)
             } else {
                 cache = createDefaultCache(name)
             }
