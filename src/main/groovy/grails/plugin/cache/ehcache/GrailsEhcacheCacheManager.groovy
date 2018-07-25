@@ -71,7 +71,6 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
 		return cache
 	}
 
-	@SuppressWarnings("unchecked")
 	protected Cache getOrCreateCache(String name) throws InterruptedException {
 		// Ensure we don't have parallel access to cache creation which can lead to 'cache already exists' exceptions
 		if (!lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS)) {
