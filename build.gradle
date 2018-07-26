@@ -79,6 +79,18 @@ grailsPublish {
     developers = [jameskleeh: "James Kleeh"]
 }
 
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username artifactory_user
+                password artifactory_password
+            }
+            url artifactory_contextUrl
+        }
+    }
+}
+
 asciidoctor {
     resources {
         from('src/docs/images')
