@@ -1,4 +1,7 @@
-.idea
-*.iml
+**/.DS_Store
+.gradle/
+.idea/
 build
-.gradle
+*.iml
+.project
+.settings/
