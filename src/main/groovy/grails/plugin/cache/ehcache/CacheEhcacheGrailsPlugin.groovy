@@ -29,7 +29,7 @@ An Ehcache-based implementation of the Cache plugin.
 
     def loadAfter = ['cache']
 
-    def dependsOn = [cache: "4.0.0.BUILD-SNAPSHOT > *"]
+    def dependsOn = [cache: "4.0.0 > *"]
 
     Closure doWithSpring() {
         { ->
