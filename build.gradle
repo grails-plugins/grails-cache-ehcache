@@ -55,7 +55,7 @@ dependencies {
 
     console "org.grails:grails-console"
 
-    compile "org.grails.plugins:cache:4.0.0.M1"
+    compile "org.grails.plugins:cache:4.0.3"
     compile 'org.ehcache:ehcache:3.3.1'
 
     documentation "org.codehaus.groovy:groovy-all:2.4.10"
