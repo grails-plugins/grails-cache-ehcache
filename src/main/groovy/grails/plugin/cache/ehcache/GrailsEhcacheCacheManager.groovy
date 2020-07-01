@@ -63,18 +63,17 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
 		if (cache == null) {
 			try {
 				cache = getOrCreateCache(name)
-			}
-			catch (InterruptedException e) {
-				throw new CacheException("Failed to get lock for " + name + " cache creation");
+			} catch (InterruptedException e) {
+				throw new CacheException("Failed to get lock for ${name} cache creation");
 			}
 		}
-		return cache
+		cache
 	}
 
 	protected Cache getOrCreateCache(String name) throws InterruptedException {
 		// Ensure we don't have parallel access to cache creation which can lead to 'cache already exists' exceptions
 		if (!lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS)) {
-			throw new CacheException("Failed to get lock for " + name + " cache creation")
+			throw new CacheException("Failed to get lock for ${name} cache creation")
 		}
 
 		try {
@@ -122,19 +121,18 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
 
     @Override
 	Collection<String> getCacheNames() {
-		return Collections.unmodifiableSet(cacheNames)
+		Collections.unmodifiableSet(cacheNames)
 	}
 
     protected GrailsEhcacheCache buildCache(String name, CacheConfiguration configuration) {
-        new GrailsEhcacheCache(name, cacheManager.getCache(name, configuration.keyType, configuration.valueType)
-        )
+        new GrailsEhcacheCache(name, cacheManager.getCache(name, configuration.keyType, configuration.valueType))
     }
 
 	protected Collection<Cache> loadCaches() {
 		Assert.notNull(cacheManager, "A backing EhCache CacheManager is required")
 		Status status = cacheManager.getStatus()
 		Assert.isTrue(Status.AVAILABLE == status,
-				"An 'available' EhCache CacheManager is required - current cache is " + status)
+				"An 'available' EhCache CacheManager is required - current cache is ${status}")
 
         Map<String, CacheConfiguration<?, ?>> configurations = cacheManager.runtimeConfiguration.cacheConfigurations
 		Set<String> names = configurations.keySet()
@@ -143,7 +141,7 @@ class GrailsEhcacheCacheManager implements GrailsCacheManager, InitializingBean,
             CacheConfiguration configuration = configurations.get(name)
 			caches.add(buildCache(name, configuration))
 		}
-		return caches
+		caches
 	}
 
 	protected void addCache(Cache cache) {

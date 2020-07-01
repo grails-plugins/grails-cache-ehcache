@@ -57,8 +57,8 @@ class GrailsEhcacheCache<K, V> implements GrailsCache {
 	@Override
 	<T> T get(Object key, Class<T> type) {
 		V value = getNativeCache().get((K)key)
-		if (value != null && type != null && !type.isInstance(value)) {
-			throw new IllegalStateException("Cached value is not of required type [" + type.getName() + "]: " + value)
+		if (value && type && !type.isInstance(value)) {
+			throw new IllegalStateException("Cached value is not of required type [${type.getName()}]: ${value}")
 		}
 		(T) value
 	}
@@ -91,10 +91,8 @@ class GrailsEhcacheCache<K, V> implements GrailsCache {
 	@SuppressWarnings("unchecked")
 	Collection<Object> getAllKeys() {
 		Set<K> keys = []
-		Iterator<Cache.Entry<K,V>> entries = getNativeCache().iterator()
-		while(entries.hasNext()) {
-			Cache.Entry<K,V> entry = entries.next()
-			keys.add(entry.key)
+		getNativeCache().each {
+			keys.add(it.key)
 		}
 		keys
 	}
