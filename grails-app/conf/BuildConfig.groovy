@@ -11,9 +11,18 @@ grails.project.dependency.resolution = {
 	log 'warn'
 
 	repositories {
-		grailsCentral()
+        // Grails Central
+        mavenRepo 'https://repo.grails.org/grails/core/'
+		//grailsCentral()
+
+        // Grails Plugins
+        mavenRepo 'https://repo.grails.org/grails/plugins/'
+
 		mavenLocal()
-		mavenCentral()
+
+        // Maven Central
+        mavenRepo 'https://repo1.maven.org/maven2/'
+		//mavenCentral()
 	}
 
 	dependencies {
