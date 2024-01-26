@@ -4,7 +4,8 @@ buildscript {
         maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
-        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
+        classpath "io.github.gradle-nexus:publish-plugin:1.0.0"
     }
 }
 
@@ -13,21 +14,19 @@ plugins {
 }
 
 //version "3.0.1"
-version "3.0.1.BUILD-SNAPSHOT"
+version "4.0.1.BUILD-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin: "eclipse"
 apply plugin: "idea"
 apply plugin: "org.grails.grails-plugin"
-apply plugin: "org.grails.grails-plugin-publish"
+apply plugin: "maven-publish"
+apply plugin: "io.github.gradle-nexus.publish-plugin"
 
 repositories {
     mavenLocal()
     maven { url "https://repo.grails.org/grails/core" }
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 dependencyManagement {
     imports {
@@ -41,24 +40,24 @@ configurations {
 }
 
 dependencies {
-    provided 'org.springframework.boot:spring-boot-starter-logging'
-    provided "org.springframework.boot:spring-boot-starter-actuator"
-    provided "org.springframework.boot:spring-boot-autoconfigure"
-    provided "org.springframework.boot:spring-boot-starter-tomcat"
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.springframework.boot:spring-boot-starter-tomcat"
 
-    provided "org.grails:grails-web-boot"
-    provided "org.grails:grails-dependencies"
-    provided 'javax.servlet:javax.servlet-api:3.1.0'
+    implementation "org.grails:grails-web-boot"
+    implementation 'javax.servlet:javax.servlet-api:3.1.0'
     profile "org.grails.profiles:plugin"
 
-    testCompile "org.grails:grails-plugin-testing"
+    testImplementation "org.grails:grails-gorm-testing-support"
 
     console "org.grails:grails-console"
 
-    compile "org.grails.plugins:cache:4.0.3"
-    compile 'org.ehcache:ehcache:3.4.0'
+    implementation "org.grails.plugins:cache:5.0.1"
+    implementation 'org.ehcache:ehcache:3.4.0'
 
-    documentation "org.codehaus.groovy:groovy-all:2.4.10"
+    documentation "org.codehaus.groovy:groovy-all"
 
 }
 
@@ -66,17 +65,21 @@ bootRun {
     jvmArgs('-Dspring.output.ansi.enabled=always')
 }
 // enable if you wish to package this plugin as a standalone application
-bootRepackage.enabled = false
+bootJar.enabled = false
 
-grailsPublish {
-    userOrg = "grails"
-    githubSlug = 'grails-plugins/grails-cache-ehcache'
-    license {
-        name = 'Apache-2.0'
+publishing {
+    publications {
+        maven(MavenPublication) {
+//            userOrg = "grails"
+//            githubSlug = 'grails-plugins/grails-cache-ehcache'
+//            license {
+//                name = 'Apache-2.0'
+//            }
+//            title = "Grails Cache Ehcache Plugin"
+//            desc = "Provides an ehcache implementation of the cache plugin"
+//            developers = [jameskleeh: "James Kleeh"]
+        }
     }
-    title = "Grails Cache Ehcache Plugin"
-    desc = "Provides an ehcache implementation of the cache plugin"
-    developers = [jameskleeh: "James Kleeh"]
 }
 
 asciidoctor {
