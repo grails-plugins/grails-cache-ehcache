@@ -20,7 +20,7 @@ apply plugin: "eclipse"
 apply plugin: "idea"
 apply plugin: "org.grails.grails-plugin"
 apply plugin: "maven-publish"
-apply plugin: "io.github.gradle-nexus.publish-plugin"
+apply plugin:"org.grails.internal.grails-plugin-publish"
 
 repositories {
     mavenLocal()
@@ -66,41 +66,15 @@ bootRun {
 // enable if you wish to package this plugin as a standalone application
 bootJar.enabled = false
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = project.group
-            artifactId = 'grails-cache-ehcache'
-            version = project.version
-
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-
-            pom {
-                name = 'Grails Cache Ehcache Plugin'
-                description = 'Provides an ehcache implementation of the cache plugin'
-                url = 'https://github.com/grails-plugins/grails-cache-ehcache'
-                licenses {
-                    license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'jameskleeh'
-                        name = "James Kleeh"
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/grails-plugins/grails-cache-ehcache:git'
-                    developerConnection = 'scm:git:ssh://github.com:grails-plugins/grails-cache-ehcache:git'
-                    url = 'https://github.com/grails-plugins/grails-cache-ehcache'
-                }
-            }
-        }
+grailsPublish {
+    userOrg = "grails"
+    githubSlug = 'grails-plugins/grails-cache-ehcache'
+    license {
+        name = 'Apache-2.0'
     }
+    title = "Grails Cache Ehcache Plugin"
+    desc = "Provides an ehcache implementation of the cache plugin"
+    developers = [jameskleeh: "James Kleeh"]
 }
 
 asciidoctor {
