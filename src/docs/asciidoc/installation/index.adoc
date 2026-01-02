@@ -7,6 +7,6 @@ To start using this plugin, add it to your `build.gradle` like the example below
 ----
 dependencies {
     ...
-    compile "{groupId}:{artifactId}:{version}"
+    implemantation "org.grails.plugins:cache-ehcache:{revnumber}"
 }
 ----

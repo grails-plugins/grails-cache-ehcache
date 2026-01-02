@@ -11,10 +11,6 @@ buildscript {
     }
 }
 
-plugins {
-    id 'org.asciidoctor.convert' version '1.5.3'
-}
-
 version = "4.0.0-SNAPSHOT"
 group = "org.grails.plugins"
 
@@ -55,7 +51,7 @@ dependencies {
     implementation "org.apache.grails:grails-cache"
     implementation 'org.ehcache:ehcache:3.11.1:jakarta'
 
-    documentation "org.codehaus.groovy:groovy-all:2.4.10"
+    documentation "org.apache.groovy:groovy-all:4.0.29"
 }
 
 bootRun {
@@ -72,34 +68,4 @@ grailsPublish {
     developers = [jameskleeh: "James Kleeh"]
 }
 
-asciidoctor {
-    resources {
-        from('src/docs/images')
-        into "./images"
-    }
-
-    attributes 'experimental'  : 'true',
-            'compat-mode'   : 'true',
-            'toc'           : 'left',
-            'icons'         : 'font',
-            'version'       : project.version,
-            'groupId'       : project.group,
-            'artifactId'    : project.name,
-            'sourcedir'     : "${projectDir}/src/main/groovy"
-}
-
-task apidocs(type: Groovydoc) {
-    source project.files('src/main/groovy')
-
-    destinationDir = new File(buildDir, 'docs/api')
-    // Might need a classpath
-    docTitle = "Grails Cache Ehcache ${version}"
-
-    classpath = configurations.documentation
-    groovyClasspath = configurations.documentation
-}
-
-task docs(type:Copy, dependsOn:[apidocs, asciidoctor])  {
-    from "$buildDir/asciidoc/html5"
-    into "$buildDir/docs"
-}
+apply from: layout.projectDirectory.file('gradle/docs-config.gradle')

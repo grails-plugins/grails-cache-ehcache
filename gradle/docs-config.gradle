@@ -1,0 +1,63 @@
+import org.asciidoctor.gradle.jvm.AsciidoctorTask
+
+apply plugin: 'org.asciidoctor.jvm.convert'
+
+tasks.withType(Groovydoc).configureEach {
+    access = GroovydocAccess.PROTECTED
+    processScripts = false
+    includeMainForScripts = false
+    includeAuthor = false
+    destinationDir = layout.buildDirectory.dir('docs/api').get().asFile
+    docTitle = "Grails Cache Ehcache ${version}"
+}
+
+tasks.withType(AsciidoctorTask).configureEach {
+    doFirst {
+        println "Woot " + layout.projectDirectory.dir('src/docs/asciidoc')
+    }
+    baseDir = layout.projectDirectory.dir('src/docs/asciidoc')
+    sourceDir = layout.projectDirectory.dir('src/docs/asciidoc')
+    outputDir = layout.buildDirectory.dir('docs/manual')
+    sources {
+        include 'index.adoc'
+    }
+    jvm {
+        jvmArgs += [
+                '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.io=ALL-UNNAMED'
+        ]
+    }
+    attributes = [
+            copyright            : 'Apache License, Version 2.0',
+            docinfo1             : 'true',
+            doctype              : 'book',
+            encoding             : 'utf-8',
+            icons                : 'font',
+            id                   : "$rootProject.name:$version",
+            idprefix             : '',
+            idseparator          : '-',
+            lang                 : 'en',
+            linkattrs            : true,
+            numbered             : '',
+            producer             : 'Asciidoctor',
+            revnumber            : version,
+            setanchors           : true,
+            'source-highlighter' : 'prettify',
+            toc                  : 'left',
+            toc2                 : '',
+            toclevels            : '2',
+            projectVersion       : version
+    ]
+}
+
+tasks.register('apidocs', Groovydoc) {
+    group = 'documentation'
+    description = 'Generates Groovydoc API documentation.'
+
+    source project.files('src/main/groovy')
+
+    destinationDir = layout.buildDirectory.dir('docs/api').get().asFile
+    docTitle = "Grails Cache Ehcache ${version}"
+    classpath = configurations.documentation
+    groovyClasspath = configurations.documentation
+}
