@@ -1,10 +1,13 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven { url "https://repo.grails.org/grails/core" }
+        maven {
+            url = "https://repo.grails.org/grails/core"
+        }
     }
     dependencies {
-        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath platform("org.apache.grails:grails-bom:$grailsVersion")
+        classpath "org.apache.grails:grails-gradle-plugins"
     }
 }
 
@@ -12,28 +15,21 @@ plugins {
     id 'org.asciidoctor.convert' version '1.5.3'
 }
 
-//version "3.0.1"
-version "3.0.1.BUILD-SNAPSHOT"
-group "org.grails.plugins"
+version = "4.0.0-SNAPSHOT"
+group = "org.grails.plugins"
 
 apply plugin: "eclipse"
 apply plugin: "idea"
-apply plugin: "org.grails.grails-plugin"
-apply plugin: "org.grails.grails-plugin-publish"
+apply plugin: 'org.apache.grails.gradle.grails-plugin'
+apply plugin: 'org.apache.grails.gradle.grails-publish'
+
+compileJava.options.release = 17
 
 repositories {
     mavenLocal()
-    maven { url "https://repo.grails.org/grails/core" }
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-dependencyManagement {
-    imports {
-        mavenBom "org.grails:grails-bom:$grailsVersion"
+    maven {
+        url = "https://repo.grails.org/grails/core"
     }
-    applyMavenExclusions false
 }
 
 configurations {
@@ -41,35 +37,32 @@ configurations {
 }
 
 dependencies {
-    provided 'org.springframework.boot:spring-boot-starter-logging'
-    provided "org.springframework.boot:spring-boot-starter-actuator"
-    provided "org.springframework.boot:spring-boot-autoconfigure"
-    provided "org.springframework.boot:spring-boot-starter-tomcat"
+    implementation platform("org.apache.grails:grails-bom:${grailsVersion}")
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.springframework.boot:spring-boot-starter-tomcat"
 
-    provided "org.grails:grails-web-boot"
-    provided "org.grails:grails-dependencies"
-    provided 'javax.servlet:javax.servlet-api:3.1.0'
-    profile "org.grails.profiles:plugin"
+    implementation "org.apache.grails:grails-web-boot"
+    implementation "org.apache.grails:grails-dependencies-starter-web"
+    implementation 'jakarta.servlet:jakarta.servlet-api'
+    profile "org.apache.grails.profiles:plugin"
 
-    testCompile "org.grails:grails-plugin-testing"
+    testImplementation "org.apache.grails:grails-testing-support-web"
 
-    console "org.grails:grails-console"
+    console "org.apache.grails:grails-console"
 
-    compile "org.grails.plugins:cache:4.0.3"
-    compile 'org.ehcache:ehcache:3.4.0'
+    implementation "org.apache.grails:grails-cache"
+    implementation 'org.ehcache:ehcache:3.11.1:jakarta'
 
     documentation "org.codehaus.groovy:groovy-all:2.4.10"
-
 }
 
 bootRun {
     jvmArgs('-Dspring.output.ansi.enabled=always')
 }
-// enable if you wish to package this plugin as a standalone application
-bootRepackage.enabled = false
 
 grailsPublish {
-    userOrg = "grails"
     githubSlug = 'grails-plugins/grails-cache-ehcache'
     license {
         name = 'Apache-2.0'

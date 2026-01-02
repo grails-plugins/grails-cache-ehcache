@@ -5,6 +5,10 @@ Grails Cache Ehcache Plugin
 
 Makes Ehcache the cache implementation for the [Grails Cache Plugin](https://github.com/grails-plugins/grails-cache)
 
+## Grails 7
+
+TODO...
+
 ## Grails 3
 
 See https://plugins.grails.org/plugin/grails/cache-ehcache and [Documentation](http://grails-plugins.github.io/grails-cache-ehcache/latest/)
