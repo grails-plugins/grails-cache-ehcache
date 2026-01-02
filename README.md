@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/grails-plugins/grails-cache-ehcache.svg)](https://travis-ci.org/grails-plugins/grails-cache-ehcache)
-
 Grails Cache Ehcache Plugin
 ====================
 
