@@ -33,7 +33,8 @@ configurations {
 }
 
 dependencies {
-    compileOnly platform("org.apache.grails:grails-bom:${grailsVersion}")
+    implementation platform("org.apache.grails:grails-bom:${grailsVersion}")
+
     compileOnly 'org.springframework.boot:spring-boot-starter-logging'
     compileOnly "org.springframework.boot:spring-boot-starter-actuator"
     compileOnly "org.springframework.boot:spring-boot-autoconfigure"
@@ -49,7 +50,11 @@ dependencies {
     console "org.apache.grails:grails-console"
 
     implementation "org.apache.grails:grails-cache"
-    implementation 'org.ehcache:ehcache:3.11.1:jakarta'
+    implementation "org.ehcache:ehcache", {
+        capabilities {
+            requireCapability('org.ehcache:ehcache-jakarta')
+        }
+    }
 
     documentation "org.apache.groovy:groovy-all:4.0.29"
 }
