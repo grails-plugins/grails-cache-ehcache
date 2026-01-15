@@ -1,9 +1,11 @@
-[![Build Status](https://travis-ci.org/grails-plugins/grails-cache-ehcache.svg)](https://travis-ci.org/grails-plugins/grails-cache-ehcache)
-
 Grails Cache Ehcache Plugin
 ====================
 
 Makes Ehcache the cache implementation for the [Grails Cache Plugin](https://github.com/grails-plugins/grails-cache)
+
+## Grails 7
+
+TODO...
 
 ## Grails 3
 

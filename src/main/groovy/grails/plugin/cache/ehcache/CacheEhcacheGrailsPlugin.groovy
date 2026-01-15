@@ -6,8 +6,8 @@ import grails.plugins.Plugin
 
 class CacheEhcacheGrailsPlugin extends Plugin {
 
-   // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "3.0.0 > *"
+    // the version or versions of Grails the plugin is designed for
+    def grailsVersion = "7.0.0 > *"
 
 
     def title = "Cache Ehcache" // Headline display name of the plugin
@@ -17,7 +17,7 @@ An Ehcache-based implementation of the Cache plugin.
     def profiles = ['web']
 
     // URL to the plugin's documentation
-    def documentation = "http://grails.org/plugin/cache-ehcache"
+    def documentation = "https://grails.org/plugin/cache-ehcache"
 
     def license = "APACHE"
 
@@ -29,7 +29,7 @@ An Ehcache-based implementation of the Cache plugin.
 
     def loadAfter = ['cache']
 
-    def dependsOn = [cache: "4.0.0 > *"]
+    def dependsOn = [cache: "7.0.0 > *"]
 
     Closure doWithSpring() {
         { ->

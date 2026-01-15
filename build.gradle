@@ -1,39 +1,31 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven { url "https://repo.grails.org/grails/core" }
+        maven {
+            url = "https://repo.grails.org/grails/core"
+        }
     }
     dependencies {
-        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath platform("org.apache.grails:grails-bom:$grailsVersion")
+        classpath "org.apache.grails:grails-gradle-plugins"
     }
 }
 
-plugins {
-    id 'org.asciidoctor.convert' version '1.5.3'
-}
-
-//version "3.0.1"
-version "3.0.1.BUILD-SNAPSHOT"
-group "org.grails.plugins"
+version = "5.0.0-SNAPSHOT"
+group = "org.grails.plugins"
 
 apply plugin: "eclipse"
 apply plugin: "idea"
-apply plugin: "org.grails.grails-plugin"
-apply plugin: "org.grails.grails-plugin-publish"
+apply plugin: 'org.apache.grails.gradle.grails-plugin'
+apply plugin: 'org.apache.grails.gradle.grails-publish'
+
+compileJava.options.release = 17
 
 repositories {
     mavenLocal()
-    maven { url "https://repo.grails.org/grails/core" }
-}
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-dependencyManagement {
-    imports {
-        mavenBom "org.grails:grails-bom:$grailsVersion"
+    maven {
+        url = "https://repo.grails.org/grails/core"
     }
-    applyMavenExclusions false
 }
 
 configurations {
@@ -41,35 +33,37 @@ configurations {
 }
 
 dependencies {
-    provided 'org.springframework.boot:spring-boot-starter-logging'
-    provided "org.springframework.boot:spring-boot-starter-actuator"
-    provided "org.springframework.boot:spring-boot-autoconfigure"
-    provided "org.springframework.boot:spring-boot-starter-tomcat"
+    implementation platform("org.apache.grails:grails-bom:${grailsVersion}")
 
-    provided "org.grails:grails-web-boot"
-    provided "org.grails:grails-dependencies"
-    provided 'javax.servlet:javax.servlet-api:3.1.0'
-    profile "org.grails.profiles:plugin"
+    compileOnly 'org.springframework.boot:spring-boot-starter-logging'
+    compileOnly "org.springframework.boot:spring-boot-starter-actuator"
+    compileOnly "org.springframework.boot:spring-boot-autoconfigure"
+    compileOnly "org.springframework.boot:spring-boot-starter-tomcat"
 
-    testCompile "org.grails:grails-plugin-testing"
+    compileOnly "org.apache.grails:grails-web-boot"
+    compileOnly "org.apache.grails:grails-dependencies-starter-web"
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+    profile "org.apache.grails.profiles:plugin"
 
-    console "org.grails:grails-console"
+    testImplementation "org.apache.grails:grails-testing-support-web"
 
-    compile "org.grails.plugins:cache:4.0.3"
-    compile 'org.ehcache:ehcache:3.4.0'
+    console "org.apache.grails:grails-console"
 
-    documentation "org.codehaus.groovy:groovy-all:2.4.10"
+    implementation "org.apache.grails:grails-cache"
+    implementation "org.ehcache:ehcache", {
+        capabilities {
+            requireCapability('org.ehcache:ehcache-jakarta')
+        }
+    }
 
+    documentation "org.apache.groovy:groovy-all:4.0.29"
 }
 
 bootRun {
     jvmArgs('-Dspring.output.ansi.enabled=always')
 }
-// enable if you wish to package this plugin as a standalone application
-bootRepackage.enabled = false
 
 grailsPublish {
-    userOrg = "grails"
     githubSlug = 'grails-plugins/grails-cache-ehcache'
     license {
         name = 'Apache-2.0'
@@ -79,34 +73,4 @@ grailsPublish {
     developers = [jameskleeh: "James Kleeh"]
 }
 
-asciidoctor {
-    resources {
-        from('src/docs/images')
-        into "./images"
-    }
-
-    attributes 'experimental'  : 'true',
-            'compat-mode'   : 'true',
-            'toc'           : 'left',
-            'icons'         : 'font',
-            'version'       : project.version,
-            'groupId'       : project.group,
-            'artifactId'    : project.name,
-            'sourcedir'     : "${projectDir}/src/main/groovy"
-}
-
-task apidocs(type: Groovydoc) {
-    source project.files('src/main/groovy')
-
-    destinationDir = new File(buildDir, 'docs/api')
-    // Might need a classpath
-    docTitle = "Grails Cache Ehcache ${version}"
-
-    classpath = configurations.documentation
-    groovyClasspath = configurations.documentation
-}
-
-task docs(type:Copy, dependsOn:[apidocs, asciidoctor])  {
-    from "$buildDir/asciidoc/html5"
-    into "$buildDir/docs"
-}
+apply from: layout.projectDirectory.file('gradle/docs-config.gradle')
