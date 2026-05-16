@@ -2,11 +2,35 @@
 
 To start using this plugin, add it to your `build.gradle` like the example below.
 
+=== Grails 7
+
 [source,groovy,subs="attributes",indent=1]
 .build.gradle
 ----
 dependencies {
     ...
     implemantation "org.grails.plugins:cache-ehcache:{revnumber}"
+}
+----
+
+=== Grails 5 & 6
+
+[source,groovy,subs="attributes",indent=1]
+.build.gradle
+----
+dependencies {
+    ...
+    implemantation "org.grails.plugins:cache-ehcache:3.0.0"
+}
+----
+
+=== Grails 3 & 4
+
+[source,groovy,subs="attributes",indent=1]
+.build.gradle
+----
+dependencies {
+    ...
+    compile "org.grails.plugins:cache-ehcache:3.0.0"
 }
 ----

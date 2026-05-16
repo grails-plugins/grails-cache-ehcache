@@ -56,7 +56,7 @@ dependencies {
         }
     }
 
-    documentation "org.apache.groovy:groovy-all:4.0.29"
+    documentation "org.apache.groovy:groovy-all:${groovyVersion}"
 }
 
 bootRun {
