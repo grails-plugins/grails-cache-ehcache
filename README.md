@@ -1,19 +1,34 @@
 🧩 Grails Cache Ehcache Plugin
 ====================
 
-Makes Ehcache the cache implementation for the [Grails Cache Plugin](https://github.com/grails-plugins/grails-cache)
+[![Maven Central](https://img.shields.io/maven-metadata/v.svg?metadataUrl=https://repo1.maven.org/maven2/org/grails/plugins/cache-ehcache/maven-metadata.xml&label=maven-central)](https://central.sonatype.com/artifact/org.grails.plugins/cache-ehcache)
+[![CI](https://github.com/grails-plugins/grails-cache-ehcache/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/grails-plugins/grails-cache-ehcache/actions/workflows/ci.yml)
 
-## Grails 7
+Makes [Ehcache](https://www.ehcache.org/) the cache implementation for the [Grails Cache Plugin](https://github.com/apache/grails-core/)
 
-TODO...
+## 🚀 Quick Start
 
-## Grails 3
+Add the dependency to your `build.gradle`:
 
-📖 [Documentation](http://grails-plugins.github.io/grails-cache-ehcache/latest/)
+### Grails 7
 
-## Grails 2
+```groovy
+dependencies {
+   implementation "org.grails.plugins:cache-ehcache:5.0.0-RC1"
+}
+```
 
-📖 [Documentation](http://grails-plugins.github.io/grails-cache-ehcache/)
+### Grails 3+
+
+```groovy
+dependencies {
+   compile "org.grails.plugins:cache-ehcache:3.0.0"
+}
+```
+
+## 📖 Documentation
+
+Full documentation is available at the project [documentation](http://grails-plugins.github.io/grails-cache-ehcache/) site.
 
 ## Branches
 
