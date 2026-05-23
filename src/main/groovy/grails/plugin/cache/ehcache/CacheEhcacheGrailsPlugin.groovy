@@ -17,7 +17,7 @@ An Ehcache-based implementation of the Cache plugin.
     def profiles = ['web']
 
     // URL to the plugin's documentation
-    def documentation = "https://grails.org/plugin/cache-ehcache"
+    def documentation = "https://grails-plugins.github.io/grails-cache-ehcache/"
 
     def license = "APACHE"
 
